@@ -1,0 +1,6 @@
+BasedOnStyle:  Chromium
+Standard:        Cpp11
+IndentWidth:     4
+AccessModifierOffset: -4
+BreakBeforeBraces: Mozilla
+ColumnLimit:     80
