@@ -38,3 +38,5 @@ enable_testing()
 
 add_subdirectory(ul)
 add_subdirectory(test)
+add_subdirectory(playground)
+

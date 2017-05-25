@@ -1,3 +1,8 @@
 #pragma once
 
-#define BE(x) x.begin(), x.end()
+#include <iterator>
+
+#define BE(x) begin(x), end(x)
+
+namespace ul {
+}

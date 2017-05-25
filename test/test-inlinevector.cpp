@@ -1,13 +1,16 @@
 #undef NDEBUG
-#include "ul/inlinevector.h"
-#include "ul/ul.h"
 
-using namespace ul;
+#include <cassert>
+
+#include "ul/inlinevector.h"
+
+#include "test_common.cpp"
 
 template <class X,
           class Y,
-          UL_T_ENABLE_IF(range_code<X>::value >= c_range_code_sized_iterable &&
-                         range_code<Y>::value >= c_range_code_sized_iterable)>
+          UL_T_ENABLE_IF(
+              ul::range_code<X>::value >= ul::c_range_code_sized_iterable &&
+              ul::range_code<Y>::value >= ul::c_range_code_sized_iterable)>
 bool operator==(const X& x, const Y& y)
 {
     if (x.size() != y.size())
@@ -18,7 +21,7 @@ bool operator==(const X& x, const Y& y)
 int main()
 {
     const int N = 10;
-    InlineVector<int, N> iv;
+    ul::InlineVector<int, N> iv;
     std::vector<int> v;
 
     for (int i = 0; i < N; ++i) {

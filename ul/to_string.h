@@ -1,6 +1,22 @@
 #pragma once
 
+#include <string>
+
+#include "ul/type_traits.h"
+
 namespace ul {
+
+using std::string;
+
+template <class It>
+string to_string_be(It b, It e);
+
+template <class T,
+          UL_T_ENABLE_IF(range_code<T>::value >= c_range_code_iterable)>
+string to_string(const T& a)
+{
+    return to_string_be(a.begin(), a.end());
+}
 
 template <class It>
 string to_string_be(It b, It e)
@@ -11,6 +27,7 @@ string to_string_be(It b, It e)
     if (b == e)
         s = "{}";
     else {
+        using std::to_string;
         s = is_string ? "{\"" : "{";
         bool first = true;
         for (auto it = b; it != e; ++it) {
@@ -23,12 +40,5 @@ string to_string_be(It b, It e)
         s += is_string ? "\"}" : "}";
     }
     return s;
-}
-
-template <class T,
-          UL_T_ENABLE_IF(range_code<T>::value >= c_range_code_iterable)>
-string to_string(const T& a)
-{
-    return to_string_be(a.begin(), a.end());
 }
 }

@@ -4,8 +4,10 @@
 #include <vector>
 #include <array>
 #include <iterator>
+#include <bitset>
 
 #define UL_T_ENABLE_IF(X) typename = typename std::enable_if<X>::type
+#define UL_DECAYDECL(EXPR) typename std::decay<decltype(EXPR)>::type
 
 namespace ul {
 
@@ -27,14 +29,15 @@ struct range_code<std::vector<T>>
 };
 
 template <class T, size_t N>
-struct range_code<std::array<T, N>> : std::integral_constant<ptrdiff_t, N>
+struct range_code<std::array<T, N>>
+    : std::integral_constant<ptrdiff_t, (ptrdiff_t)N>
 {
 };
 
-template <class SpanLike>
+template <class T>
 struct value_type
 {
-    using type = typename std::decay<decltype(std::begin(
-        std::declval<typename std::add_const<SpanLike>::type>()))>::type;
+    using type = typename std::decay<decltype(
+        std::begin(std::declval<typename std::add_const<T>::type>()))>::type;
 };
 }

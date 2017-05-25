@@ -1,6 +1,29 @@
 #pragma once
 
+/*
+Helper constructs
+
+- to allow +=, -=, *=, /= operators on existing types
+- to allow element-wise ==, !=, <=, >=, <, > on existing types
+
+For now, only std::array is supported:
+
+    array<int, 3> x, y;
+
+    EWM(x) *= 3;
+    EWM(x) += y;
+
+    bool b = any_of(EW(x) >= EW(y));
+*/
+
+#include <bitset>
+
+#include "ul/type_traits.h"
+
 namespace ul {
+
+using std::array;
+using std::bitset;
 
 template <class T, size_t N>
 class EWArrayRef  // element-wise array ref
@@ -8,6 +31,7 @@ class EWArrayRef  // element-wise array ref
 public:
     explicit EWArrayRef(const array<T, N>& x) : x(&x) {}
     const array<T, N>& get() const { return *x; }
+
 private:
     const array<T, N>* x;
 };
@@ -27,6 +51,7 @@ public:
     DEFOP(+=)
     DEFOP(-=)
     DEFOP(*=)
+    DEFOP(/=)
 #undef DEFOP
 #define DEFOP(OPEQ)                 \
     void operator OPEQ(T y)         \
@@ -83,6 +108,7 @@ EWArrayRefM<T, N> EWM(array<T, N>& x)
 DEFOP(<)
 DEFOP(>)
 DEFOP(==)
+DEFOP(!=)
 DEFOP(<=)
 DEFOP(>=)
 #undef DEFOP
