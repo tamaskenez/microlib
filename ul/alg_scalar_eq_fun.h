@@ -8,9 +8,9 @@ Functions returning scalar from ranges (reduce-like):
 
 */
 
-#include "ul/type_traits.h"
-
 #include <functional>
+
+#include "ul/type_traits.h"
 
 namespace ul {
 

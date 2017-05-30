@@ -1,10 +1,10 @@
 #pragma once
 
+#include <array>
+#include <bitset>
+#include <iterator>
 #include <type_traits>
 #include <vector>
-#include <array>
-#include <iterator>
-#include <bitset>
 
 #define UL_T_ENABLE_IF(X) typename = typename std::enable_if<X>::type
 #define UL_DECAYDECL(EXPR) typename std::decay<decltype(EXPR)>::type
