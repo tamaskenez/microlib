@@ -6,8 +6,12 @@ set(tests
 	alg_elementwise
 	alg_scalar_eq_fun
 	to_string
-	type_traits
-	ul)
+	type_traits)
+
+set(tests2
+	ul
+	algorithm
+)
 
 link_libraries(microlib::microlib)
 
@@ -27,5 +31,12 @@ foreach(t IN LISTS tests)
 	set(n "${b}-std-ul")
     add_executable(${n} ${b})
     target_compile_definitions(${n} PRIVATE ULTEST_USING_UL ULTEST_USING_STD)
+    add_test(${n} ${n})
+endforeach()
+
+foreach(t IN LISTS tests2)
+	set(b "test-${t}")
+	set(n "${b}")
+    add_executable(${n} ${b})
     add_test(${n} ${n})
 endforeach()

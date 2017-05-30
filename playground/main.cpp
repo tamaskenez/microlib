@@ -1,6 +1,7 @@
 #include <functional>
 #include <type_traits>
 #include <array>
+#include <algorithm>
 
 #if 0
 using std::forward;
@@ -26,6 +27,7 @@ auto myplus(const X& x, const Y& y) -> decltype(x + y)
 #endif
 int main()
 {
+    if (binary_search(BE(X), i))
 #if 0
     AI1 x, y;
 
@@ -33,5 +35,5 @@ int main()
     std::plus<>{}(x, y);
     myplus(x, y);
 #endif
-    return 0;
+        return 0;
 }
