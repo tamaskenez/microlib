@@ -1,7 +1,8 @@
 file(GLOB_RECURSE headers *.h)
 add_library(microlib
     ${headers}
-    ul.cpp)
+    ul.cpp
+    string.cpp)
 
 target_include_directories(microlib
     PUBLIC
