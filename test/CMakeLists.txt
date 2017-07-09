@@ -13,6 +13,7 @@ set(tests2
 	algorithm
     math
     string
+    string_par
 )
 
 link_libraries(microlib::microlib)
@@ -39,6 +40,8 @@ endforeach()
 foreach(t IN LISTS tests2)
 	set(b "test-${t}")
 	set(n "${b}")
-    add_executable(${n} ${b})
+    message(STATUS "add_executable(${n} \"${b}.cpp\")")
+    add_executable(${n} "${b}.cpp")
+    message(STATUS "add_test(${n} ${n})")
     add_test(${n} ${n})
 endforeach()
