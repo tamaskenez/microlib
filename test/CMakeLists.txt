@@ -11,6 +11,7 @@ set(tests
 set(tests2
 	ul
 	algorithm
+    math
 )
 
 link_libraries(microlib::microlib)
