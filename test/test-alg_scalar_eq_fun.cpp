@@ -6,6 +6,7 @@
 
 #include "test_common.cpp"
 
+#if 0
 #define GO(EO, O)                    \
     z = x;                           \
     ULCC EWM(z) EO y;                \
@@ -26,6 +27,8 @@
     bs = x[0] O ULCC EW(y);             \
     for (int i = 0; i < N; ++i)         \
         assert(bs[i] == (x[0] O y[i]));
+
+#endif
 
 template <int N>
 void f(int a, int b, int c)

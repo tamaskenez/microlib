@@ -21,6 +21,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         ${common_gcc_clang}
         -Wall -Wnon-virtual-dtor
         -Wunused -Woverloaded-virtual 
+        -Wno-header-hygiene
+        -Wno-missing-prototypes
         )
 elseif(CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "Using Gnu compile options")
