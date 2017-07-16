@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <vector>
+#include <string>
 
 // minimal implementation (just what was needed) of the 1-D span concept,
 // that is: span encapsulates a contiguous memory block
@@ -90,4 +91,13 @@ span<T> make_span(T* p, std::size_t s)
 }
 
 using cspan = span<const char>;
+
+inline cspan make_span(const char* s)
+{
+    return cspan(s, strlen(s));
+}
+inline cspan make_span(const std::string& s)
+{
+    return cspan(s.data(), s.size());
+}
 }
