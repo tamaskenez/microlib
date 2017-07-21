@@ -11,6 +11,7 @@
 #include "ul/to_string.h"
 #include "ul/type_traits.h"
 #include "ul/ul.h"
+#include "ul/check.h"
 
 namespace ul {
 void f()
