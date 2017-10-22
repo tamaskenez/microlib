@@ -1,5 +1,5 @@
-#include "ul/string_par.h"
 #include "simple_test.hpp"
+#include "ul/string_par.h"
 
 namespace ul {
 void f1(string_par sp, const std::string& ss, bool b = true)
@@ -62,7 +62,7 @@ int main(int, const char* [])
 
     return test_result();
 }
-}
+}  // namespace ul
 
 int main(int argc, const char* argv[])
 {

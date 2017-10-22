@@ -2,8 +2,8 @@
 
 #include <cassert>
 #include <cstddef>
-#include <vector>
 #include <string>
+#include <vector>
 
 // minimal implementation (just what was needed) of the 1-D span concept,
 // that is: span encapsulates a contiguous memory block
@@ -100,4 +100,4 @@ inline cspan make_span(const std::string& s)
 {
     return cspan(s.data(), s.size());
 }
-}
+}  // namespace ul

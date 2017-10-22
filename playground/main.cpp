@@ -1,7 +1,7 @@
+#include <algorithm>
+#include <array>
 #include <functional>
 #include <type_traits>
-#include <array>
-#include <algorithm>
 
 #if 0
 using std::forward;

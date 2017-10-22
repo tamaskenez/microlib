@@ -20,7 +20,7 @@
 // In that case define `UL_DONT_DEFINE_PLAIN_CHECK` and use `UL_CHECK` instead:
 //
 //     #define UL_DONT_DEFINE_PLAIN_CHECK
-//     #include "adasworks/sx/check.h"
+//     #include "ul/check.h"
 //     ...
 //     UL_CHECK(cond)
 //
@@ -50,8 +50,8 @@ UL_NORETURN void check_failed_core(const char* condition,
                                    const char* function,
                                    const char* format_string,
                                    ...) UL_PRINTFLIKE(5, 6);
-}
-}
+}  // namespace detail
+}  // namespace ul
 
 #ifdef __clang__
 #pragma GCC diagnostic push
@@ -60,8 +60,9 @@ UL_NORETURN void check_failed_core(const char* condition,
 
 // Simple but non-standard implementation
 #define UL_CHECK(condition, ...)                                            \
-    ((UL_LIKELY(condition)) ? (void)0 : (::ul::detail::check_failed_core(   \
-                                            #condition, __FILE__, __LINE__, \
+    ((UL_LIKELY(condition))                                                 \
+         ? (void)0                                                          \
+         : (::ul::detail::check_failed_core(#condition, __FILE__, __LINE__, \
                                             UL_FUNCTION, ##__VA_ARGS__)))
 
 #ifdef __clang__

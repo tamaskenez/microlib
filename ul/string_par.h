@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <cstring>
+#include <string>
 
 namespace ul {
 
@@ -84,4 +84,4 @@ inline bool operator!=(const char* y, string_par x)
 {
     return strcmp(y, x.c_str()) != 0;
 }
-}
+}  // namespace ul

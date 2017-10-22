@@ -40,4 +40,4 @@ struct value_type
     using type = typename std::decay<decltype(
         std::begin(std::declval<typename std::add_const<T>::type>()))>::type;
 };
-}
+}  // namespace ul

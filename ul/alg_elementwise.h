@@ -112,4 +112,4 @@ DEFOP(!=)
 DEFOP(<=)
 DEFOP(>=)
 #undef DEFOP
-}
+}  // namespace ul

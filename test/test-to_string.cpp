@@ -6,6 +6,4 @@
 
 #include "test_common.cpp"
 
-int main()
-{
-}
+int main() {}

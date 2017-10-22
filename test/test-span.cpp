@@ -1,12 +1,12 @@
 #include <array>
 
-#include "ul/span.h"
 #include "simple_test.hpp"
+#include "ul/span.h"
 
 namespace ul {
 
-using ul::span;
 using std::array;
+using ul::span;
 
 int main(int, const char* [])
 {
@@ -33,7 +33,7 @@ int main(int, const char* [])
 
     return test_result();
 }
-}
+}  // namespace ul
 int main(int argc, const char* argv[])
 {
     return ul::main(argc, argv);

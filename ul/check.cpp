@@ -1,8 +1,8 @@
 #include "ul/check.h"
 
+#include <cstdarg>
 #include <cstdio>
 #include <exception>
-#include <cstdarg>
 
 namespace ul {
 namespace detail {
@@ -40,5 +40,5 @@ void check_failed_core(const char* condition,
             condition, function, file, line);
     std::terminate();
 }
-}
-}
+}  // namespace detail
+}  // namespace ul

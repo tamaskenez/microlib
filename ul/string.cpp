@@ -11,4 +11,4 @@ bool startswith(string_par s, string_par prefix)
     FOR(i, 0, prefix.size()) if (s[i] != prefix[i]) return false;
     return true;
 }
-}
+}  // namespace ul

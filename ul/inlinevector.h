@@ -85,4 +85,4 @@ template <class T, int N>
 struct range_code<InlineVector<T, N>> : std::integral_constant<ptrdiff_t, N>
 {
 };
-}
+}  // namespace ul

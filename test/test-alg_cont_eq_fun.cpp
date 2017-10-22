@@ -1,7 +1,7 @@
 #undef NDEBUG
 
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
 #include <functional>
 
 #include "ul/alg_cont_eq_fun.h"

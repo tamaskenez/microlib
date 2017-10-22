@@ -112,4 +112,4 @@ DEF_BINFUN(min_ew, std::min)
 DEF_BINFUN(max_ew, std::max)
 
 #undef DEF_BINOP
-}
+}  // namespace ul

@@ -41,4 +41,4 @@ string to_string_be(It b, It e)
     }
     return s;
 }
-}
+}  // namespace ul

@@ -48,4 +48,4 @@ void sort_unique_trunc(Cont& cont)
     std::sort(BE(cont));
     unique_trunc(cont);
 }
-}
+}  // namespace ul

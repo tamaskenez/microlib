@@ -39,4 +39,4 @@ bool none_of(const bitset<N>& bs)
 {
     return bs.none();
 }
-}
+}  // namespace ul
