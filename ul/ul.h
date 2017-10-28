@@ -13,7 +13,7 @@
 
 #define ON_SCOPE_EXIT                                \
     auto UL_CAT(ul_scope_exit_task__, __COUNTER__) = \
-        ::ul::detail::scope_exit_task_factory << [&]
+        ::ul::detail::dummy_type_for_on_scope_exit{} << [&]
 
 namespace ul {
 
@@ -40,21 +40,13 @@ private:
 };
 
 namespace detail {
-struct
+struct dummy_type_for_on_scope_exit
+{};
+inline scope_exit_task operator<<(dummy_type_for_on_scope_exit,
+                                  std::function<void()>&& f)
 {
-    // template<class T = void> // sole purpose of 'template' to suppress unused
-    // << operator warning
-    scope_exit_task operator<<(std::function<void()>&& f)
-    {
-        return scope_exit_task(std::move(f));
-    }
-} scope_exit_task_factory;
-
-inline void scope_exit_task_factory_suppress_unused_operator_warning()
-{
-    scope_exit_task_factory << nullptr;
+    return scope_exit_task(std::move(f));
 }
-
 }  // namespace detail
 
 }  // namespace ul
