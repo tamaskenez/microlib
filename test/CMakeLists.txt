@@ -46,3 +46,6 @@ foreach(t IN LISTS tests2)
     message(STATUS "add_test(${n} ${n})")
     add_test(${n} ${n})
 endforeach()
+
+target_sources(test-ul PRIVATE test-ul-2.cpp)
+

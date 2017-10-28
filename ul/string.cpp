@@ -8,7 +8,7 @@ bool startswith(string_par s, string_par prefix)
         return false;
     if (prefix.size() == 0)
         return true;
-    FOR(i, 0, prefix.size()) if (s[i] != prefix[i]) return false;
+    FOR(i, 0, < prefix.size()) if (s[i] != prefix[i]) return false;
     return true;
 }
 }  // namespace ul
