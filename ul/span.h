@@ -1,8 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 // minimal implementation (just what was needed) of the 1-D span concept,
@@ -92,12 +94,54 @@ span<T> make_span(T* p, std::size_t s)
 
 using cspan = span<const char>;
 
-inline cspan make_span(const char* s)
+inline cspan as_span(const char* s)
 {
     return cspan(s, strlen(s));
 }
-inline cspan make_span(const std::string& s)
+inline cspan as_span(const std::string& s)
 {
     return cspan(s.data(), s.size());
 }
+
+template <class T>
+span<std::add_const_t<T>> as_span(const std::vector<T>& x)
+{
+    return make_span(x.data(), x.size());
+}
+
+template <class T>
+bool operator<(span<T> x, span<T> y)
+{
+    return std::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+}
+
+template <class T>
+typename span<T>::iterator begin(const span<T>& x)
+{
+    return x.begin();
+}
+
+template <class T>
+typename span<T>::iterator end(const span<T>& x)
+{
+    return x.end();
+}
+
+template <class T>
+std::string to_string(span<T> x)
+{
+    using std::to_string;
+    bool first = true;
+    std::string s("{");
+    for (auto it = x.begin(); it != x.end(); ++it) {
+        if (!first)
+            s += ", ";
+        else
+            first = false;
+        s += to_string(*it);
+    }
+    s += "}";
+    return s;
+}
+
 }  // namespace ul
