@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <string>
@@ -107,6 +108,12 @@ template <class T>
 span<std::add_const_t<T>> as_span(const std::vector<T>& x)
 {
     return make_span(x.data(), x.size());
+}
+
+template <class T, size_t N>
+span<std::add_const_t<T>> as_span(const std::array<T, N>& x)
+{
+    return make_span(x.data(), N);
 }
 
 template <class T>
