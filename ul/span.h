@@ -29,6 +29,12 @@ public:
     // fundamental constructor
     span(pointer d, size_type s) : d(d), s(s) { assert(d || s == 0); }
     span(pointer d, pointer e) : d(d), s(e - d) { assert(d <= e); }
+
+    template <std::size_t N>
+    constexpr span(const std::array<std::remove_const_t<T>, N>& arr)
+        : d(arr.data()), s(N)
+    {}
+
     // assignent from span
     template <typename U,
               typename = std::enable_if_t<std::is_convertible<U, T>::value>>

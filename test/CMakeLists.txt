@@ -15,6 +15,8 @@ set(tests2
     string
     string_par
     span
+    math_special
+    ml
 )
 
 link_libraries(microlib::microlib)
