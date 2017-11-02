@@ -54,6 +54,21 @@ T difftan(T x)
                   "tan derivatives implemented only up to 3.");
 }
 
+// Derivatives of cos x, deg 0..3
+template <int N, class T>
+T diffcos(T x)
+{
+    if constexpr (N % 4 == 0)
+        return std::cos(x);
+    else if constexpr (N % 4 == 1)
+        return -std::sin(x);
+    else if constexpr (N % 4 == 2)
+        return -std::cos(x);
+    else if constexpr (N % 4 == 3)
+        return std::sin(x);
+    std::terminate();
+}
+
 // Taylor series of tan(x) around `a`. Return array with coefficients of the
 // polynomial. Deg = 0..3
 template <int Deg, class T>
@@ -74,6 +89,35 @@ std::array<T, Deg + 1> taylor_tan(T a)
                     Deg == 3,
                     "Derivatives of tan x is implemented only up to 3.");
                 v[3] = difftan<3>(a) / 6;
+                v[2] -= 3 * a * v[3];
+                v[1] += 3 * a * a * v[3];
+                v[0] -= a * a * a * v[3];
+            }
+        }
+    }
+    return v;
+}
+
+// Taylor series of cos(x) around `a`. Return array with coefficients of the
+// polynomial. Deg = 0..3
+template <int Deg, class T>
+std::array<T, Deg + 1> taylor_cos(T a)
+{
+    static_assert(Deg >= 0);
+    std::array<T, Deg + 1> v;
+    v[0] = cos(a);
+    if constexpr (Deg >= 1) {
+        v[1] = diffcos<1>(a);
+        v[0] -= a * v[1];
+        if constexpr (Deg >= 2) {
+            v[2] = diffcos<2>(a) / 2;
+            v[1] -= 2 * a * v[2];
+            v[0] += a * a * v[2];
+            if constexpr (Deg >= 3) {
+                static_assert(
+                    Deg == 3,
+                    "Derivatives of cos x is implemented only up to 3.");
+                v[3] = diffcos<3>(a) / 6;
                 v[2] -= 3 * a * v[3];
                 v[1] += 3 * a * a * v[3];
                 v[0] -= a * a * a * v[3];
