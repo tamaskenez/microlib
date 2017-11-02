@@ -104,8 +104,8 @@ int main()
         }
     }
     {
-        using ul::ml::polyder;
-        using ul::ml::polyval;
+        using ul::polyder;
+        using ul::polyval;
         for (double a = -1; a <= 1; a += 0.1) {
             auto p0 = ul::taylor_tan<0>(a);
             auto p1 = ul::taylor_tan<1>(a);

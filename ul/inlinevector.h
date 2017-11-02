@@ -20,6 +20,34 @@ public:
     using iterator = typename array_t::iterator;
     using const_iterator = typename array_t::const_iterator;
 
+    // Default constructor aggregate-initializes underlying array
+    InlineVector() : a{} {}
+
+    explicit InlineVector(uninitialized_t) {}
+
+    InlineVector(int n, uninitialized_t) : s(n) { assert(n <= Capacity); }
+
+    explicit InlineVector(int n, const T& x) : s(n)
+    {
+        assert(n <= Capacity);
+        for (int i = 0; i < n; ++i)
+            a[i] = x;
+    }
+
+    explicit InlineVector(std::initializer_list<T> x) : s(x.size())
+    {
+        assert(x.size() <= Capacity);
+        std::copy(x.begin(), x.end(), a.begin());
+    }
+
+    template <class U, size_t N>
+    void operator=(const std::array<U, N>& x)
+    {
+        static_assert(N <= Capacity);
+        std::copy(BE(x), a.begin());
+        s = N;
+    }
+
     int size() const { return s; }
     constexpr int capacity() const { return Capacity; }
     bool empty() const { return s == 0; }
@@ -70,11 +98,23 @@ public:
     }
 
     void clear() { s = 0; }
-    void resize(int i)
+
+    void resize(int i, uninitialized_t)
     {
         assert(0 <= i && i <= Capacity);
         s = i;
     }
+
+    void resize(int i, const T& value = T())
+    {
+        assert(0 <= i && i <= Capacity);
+        for (int j = s; j < i; ++j)
+            a[j] = value;
+        s = i;
+    }
+
+    auto data() { return a.data(); }
+    auto data() const { return a.data(); }
 
 private:
     int s = 0;
@@ -85,4 +125,46 @@ template <class T, int N>
 struct range_code<InlineVector<T, N>> : std::integral_constant<ptrdiff_t, N>
 {
 };
+
+template <class T, size_t N>
+struct sequence_compile_time_size_traits<InlineVector<T, N>>
+{
+    static constexpr size_t capacity = N;
+    static constexpr size_t size = c_runtime_size_marker;
+};
+
+template <class T, size_t N>
+struct array_or_inlinevector_or_vector<T, N, true, false>
+{
+    using type = ul::InlineVector<T, N>;
+};
+
+template <class T, size_t CompileTimeCapacityOrSize, bool HasCompileTimeSize>
+constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(
+    size_t runtime_size)
+{
+    if constexpr (CompileTimeCapacityOrSize != c_runtime_size_marker) {
+        if constexpr (HasCompileTimeSize)
+            return std::array<T, CompileTimeCapacityOrSize>{};
+        else
+            return InlineVector<T, CompileTimeCapacityOrSize>(runtime_size, 0);
+    } else
+        return std::vector<T>(runtime_size, 0);
+}
+
+template <class T, size_t CompileTimeCapacityOrSize, bool HasCompileTimeSize>
+constexpr auto make_uninitialized_array_or_inlinevector_or_vector(
+    size_t runtime_size)
+{
+    if constexpr (CompileTimeCapacityOrSize != c_runtime_size_marker) {
+        if constexpr (HasCompileTimeSize)
+            return std::array<T, CompileTimeCapacityOrSize>();
+        else
+            return InlineVector<T, CompileTimeCapacityOrSize>(runtime_size,
+                                                              uninitialized);
+    } else
+        return std::vector<T>(runtime_size,
+                              0);  // no unitialized vector available
+}
+
 }  // namespace ul

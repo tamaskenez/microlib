@@ -9,6 +9,7 @@
 #include "ul/ul.h"
 
 using std::vector;
+using ul::is_zero;
 using ul::make_span;
 using ul::sec;
 using ul::sign;
@@ -52,6 +53,12 @@ int main()
     assert(fabs(sec(.1) - (1 / cos(.1))) < 1e3 * DBL_MIN);
     assert(fabs(sec(-.1) - (1 / cos(.1))) < 1e3 * DBL_MIN);
 
+    assert(!is_zero(-1));
+    assert(is_zero(0));
+    assert(!is_zero(1));
+    assert(!is_zero(-0.1));
+    assert(is_zero(0.0));
+    assert(!is_zero(INFINITY));
     printf("Done.\n");
     return 0;
 }

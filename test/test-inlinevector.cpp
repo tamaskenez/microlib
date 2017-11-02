@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "ul/inlinevector.h"
+#include "ul/ul.h"
 
 #include "test_common.cpp"
 
@@ -21,6 +22,19 @@ bool operator==(const X& x, const Y& y)
 int main()
 {
     const int N = 10;
+    {
+        ul::InlineVector<int, N> a;
+        assert(std::all_of(BE(a), [](auto x) { return x == 0; }));
+    }
+    {
+        ul::InlineVector<int, N> a(ul::uninitialized);
+        a.resize(N, 2);
+        assert(std::all_of(BE(a), [](auto x) { return x == 2; }));
+        a.resize(0);
+        std::fill(a.data(), a.data() + N, 3);
+        a.resize(N, ul::uninitialized);
+        assert(std::all_of(BE(a), [](auto x) { return x == 3; }));
+    }
     ul::InlineVector<int, N> iv;
     std::vector<int> v;
 
@@ -49,4 +63,6 @@ int main()
     iv.push_back(10);
     v.push_back(10);
     assert(v == iv);
+
+    printf("Done.\n");
 }

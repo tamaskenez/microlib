@@ -6,7 +6,7 @@
 
 #include "ul/preproc.h"
 
-#define BE(X) begin(X), end(X)
+#define BE(X) std::begin(X), std::end(X)
 #define FOR(VAR, FROM, OP_TO) for (auto VAR = (FROM); VAR OP_TO; ++(VAR))
 #define FORBACK(VAR, FROM, OP_TO) for (auto VAR = (FROM); VAR OP_TO; --(VAR))
 #define FORBE(VAR, X) for (auto(VAR) = begin(X); (VAR) != end(X); ++(VAR))

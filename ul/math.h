@@ -21,16 +21,22 @@ bool within_co(const X& x, const L& lower, const U& upper)
 }
 
 template <class T>
-constexpr int sign(T x) noexcept
+bool is_zero(T x)
 {
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfloat-equal"
 #endif
-    return x == 0 ? 0 : (std::signbit(x) ? -1 : 1);
+    return x == 0;
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+}
+
+template <class T>
+constexpr int sign(T x) noexcept
+{
+    return is_zero(x) ? 0 : (std::signbit(x) ? -1 : 1);
 }
 
 template <class T>
