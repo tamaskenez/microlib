@@ -6,7 +6,7 @@
 #include "ul/ul.h"
 
 using std::vector;
-using ul::scope_exit_task;
+using ul::ScopeExitTask;
 
 void scope_exit_test2();
 
@@ -82,13 +82,13 @@ void scope_exit_test()
     int f = 5;
     int g = 6;
     {
-        scope_exit_task t1;
-        scope_exit_task t2;
-        scope_exit_task t3([&d]() { d += 10; });
-        scope_exit_task t4([&e]() { e += 10; });
-        scope_exit_task t5([&f]() { f += 10; });
-        scope_exit_task t6([&g]() { ++g; });
-        scope_exit_task t7(std::move(t6));
+        ScopeExitTask t1;
+        ScopeExitTask t2;
+        ScopeExitTask t3([&d]() { d += 10; });
+        ScopeExitTask t4([&e]() { e += 10; });
+        ScopeExitTask t5([&f]() { f += 10; });
+        ScopeExitTask t6([&g]() { ++g; });
+        ScopeExitTask t7(std::move(t6));
 
         t2 = [&c]() { c = 12; };
         t4 = ([&e]() { e = 114; });

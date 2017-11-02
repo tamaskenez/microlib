@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 
 #include "ul/preproc.h"
@@ -11,22 +12,23 @@
 #define FORBACK(VAR, FROM, OP_TO) for (auto VAR = (FROM); VAR OP_TO; --(VAR))
 #define FORBE(VAR, X) for (auto(VAR) = begin(X); (VAR) != end(X); ++(VAR))
 
+// Creates zero-overhead scope exit object
+// Usage example: ON_SCOPE_EXIT { fclose(); };
 #define ON_SCOPE_EXIT                                \
     auto UL_CAT(ul_scope_exit_task__, __COUNTER__) = \
-        ::ul::detail::dummy_type_for_on_scope_exit{} << [&]
+        ::ul::detail::DummyTypeForOnScopeExit{} << [&]() -> void
 
 namespace ul {
 
-struct scope_exit_task
+// Takes a lambda in ctor, stores in std::function<void()>, execute in dtor.
+// Can be modified along lifetime.
+struct ScopeExitTask
 {
-    scope_exit_task() = default;
-    scope_exit_task(const scope_exit_task&) = delete;
-    explicit scope_exit_task(std::function<void()>&& f) : task(std::move(f)) {}
-    scope_exit_task(scope_exit_task&& x) : task(move(x.task))
-    {
-        x.task = nullptr;
-    }
-    ~scope_exit_task()
+    ScopeExitTask() = default;
+    ScopeExitTask(const ScopeExitTask&) = delete;
+    explicit ScopeExitTask(std::function<void()>&& f) : task(std::move(f)) {}
+    ScopeExitTask(ScopeExitTask&& x) : task(move(x.task)) { x.task = nullptr; }
+    ~ScopeExitTask()
     {
         if (task)
             task();
@@ -40,12 +42,28 @@ private:
 };
 
 namespace detail {
-struct dummy_type_for_on_scope_exit
+
+struct DummyTypeForOnScopeExit
 {};
-inline scope_exit_task operator<<(dummy_type_for_on_scope_exit,
-                                  std::function<void()>&& f)
+
+template <class F>
+struct TemplatedScopeExitTask
 {
-    return scope_exit_task(std::move(f));
+    explicit TemplatedScopeExitTask(F&& f) : f(f) {}
+    TemplatedScopeExitTask(const TemplatedScopeExitTask&) = delete;
+    ~TemplatedScopeExitTask() { f(); }
+
+private:
+    F f;
+};
+
+template <class F>
+TemplatedScopeExitTask<typename std::decay<F>::type> operator<<(
+    DummyTypeForOnScopeExit,
+    F&& f)
+{
+    return TemplatedScopeExitTask<typename std::decay<F>::type>(
+        std::forward<F>(f));
 }
 }  // namespace detail
 
