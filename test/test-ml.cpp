@@ -13,6 +13,7 @@ using std::array;
 using ul::conv;
 using ul::make_span;
 using ul::polyder;
+using ul::polyint;
 using ul::polyval;
 
 template <int N>
@@ -25,6 +26,16 @@ void test_polyder(const T& x)
     auto r = polyder(x);
     static_assert(std::is_same<decltype(r), ExpectedResultType>::value);
     assert(r.size() + 1 == x.size());
+    assert(std::equal(BE(r), BE(expected)));
+}
+
+template <class ExpectedResultType, class T>
+void test_polyint(const T& x, int C0)
+{
+    std::array<int, 4> expected{{456, 345, 117, 41}};
+    auto r = polyint(x, C0);
+    static_assert(std::is_same<decltype(r), ExpectedResultType>::value);
+    assert(r.size() == x.size() + 1);
     assert(std::equal(BE(r), BE(expected)));
 }
 
@@ -73,13 +84,25 @@ int main()
     }
 
     {
-        std::array<int, 4> a = {{456, 345, 234, 123}};
-        ul::InlineVector<int, 7> iv({456, 345, 234, 123});
-        std::vector<int> v = {{456, 345, 234, 123}};
+#define POLYDER_X {456, 345, 234, 123}
+        std::array<int, 4> a{POLYDER_X};
+        ul::InlineVector<int, 7> iv(POLYDER_X);
+        std::vector<int> v{POLYDER_X};
         test_polyder<std::array<int, 3>>(a);
         test_polyder<ul::InlineVector<int, 6>>(iv);
         test_polyder<std::vector<int>>(v);
         test_polyder<std::vector<int>>(ul::as_span(a));
+    }
+
+    {
+#define POLYINT_X {345, 234, 123}
+        std::array<int, 3> a{POLYINT_X};
+        ul::InlineVector<int, 7> iv(POLYINT_X);
+        std::vector<int> v{POLYINT_X};
+        test_polyint<std::array<int, 4>>(a, 456);
+        test_polyint<ul::InlineVector<int, 8>>(iv, 456);
+        test_polyint<std::vector<int>>(v, 456);
+        test_polyint<std::vector<int>>(ul::as_span(a), 456);
     }
 
     {

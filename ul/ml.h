@@ -55,6 +55,24 @@ auto polyder(const V& p)
     return result;
 }
 
+template <class V>
+auto polyint(const V& p, UL_DECAYDECL(p[0]) C0 = 0)
+{
+    using traits = sequence_compile_time_size_traits<V>;
+    constexpr size_t N = traits::capacity == c_runtime_size_marker
+                             ? c_runtime_size_marker
+                             : traits::capacity + 1;
+    using T = UL_DECAYDECL(p[0]);
+    auto result = make_uninitialized_array_or_inlinevector_or_vector<
+        T, N, traits::size != c_runtime_size_marker>(p.size() + 1);
+
+    result[0] = C0;
+    for (int i = 0; i < p.size(); ++i) {
+        result[i + 1] = p[i] / (i + 1);
+    }
+    return result;
+}
+
 constexpr size_t conv_result_size(size_t x, size_t y)
 {
     return (x == 0 || y == 0) ? 0 : x + y - 1;
