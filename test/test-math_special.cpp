@@ -14,6 +14,7 @@ using std::vector;
 
 using ul::as_span;
 using ul::diffcos;
+using ul::diffsin;
 using ul::difftan;
 using ul::make_span;
 using ul::sign;
@@ -92,7 +93,7 @@ int main()
     }
     {
         for (double x = -1; x < 1; x += 0.1) {
-            assert_approx_eq(difftan<0>(x), std::tan(x), 1e-10);
+            assert_approx_eq(difftan<0>(x), tan(x), 1e-10);
             assert_approx_eq(
                 difftan<1>(x),
                 approx_deriv(1, [](double x) { return tan(x); }, x), 1e-8);
@@ -106,7 +107,7 @@ int main()
     }
     {
         for (double x = -1; x < 1; x += 0.1) {
-            assert_approx_eq(diffcos<0>(x), std::cos(x), 1e-10);
+            assert_approx_eq(diffcos<0>(x), cos(x), 1e-10);
             assert_approx_eq(
                 diffcos<1>(x),
                 approx_deriv(1, [](double x) { return cos(x); }, x), 1e-8);
@@ -116,6 +117,20 @@ int main()
             assert_approx_eq(
                 diffcos<3>(x),
                 approx_deriv(3, [](double x) { return cos(x); }, x), 1e-3);
+        }
+    }
+    {
+        for (double x = -1; x < 1; x += 0.1) {
+            assert_approx_eq(diffsin<0>(x), sin(x), 1e-10);
+            assert_approx_eq(
+                diffsin<1>(x),
+                approx_deriv(1, [](double x) { return sin(x); }, x), 1e-8);
+            assert_approx_eq(
+                diffsin<2>(x),
+                approx_deriv(2, [](double x) { return sin(x); }, x), 1e-5);
+            assert_approx_eq(
+                diffsin<3>(x),
+                approx_deriv(3, [](double x) { return sin(x); }, x), 1e-3);
         }
     }
     {
@@ -168,6 +183,32 @@ int main()
 
             assert_approx_eq(polyval(polyder(polyder(polyder(p3))), a),
                              diffcos<3>(a), 1e-10);
+        }
+    }
+    {
+        using ul::polyder;
+        using ul::polyval;
+        for (double a = -1; a <= 1; a += 0.1) {
+            auto p0 = ul::taylor_sin<0>(a);
+            auto p1 = ul::taylor_sin<1>(a);
+            auto p2 = ul::taylor_sin<2>(a);
+            auto p3 = ul::taylor_sin<3>(a);
+            assert_approx_eq(polyval(p0, a), diffsin<0>(a), 1e-10);
+            assert_approx_eq(polyval(p1, a), diffsin<0>(a), 1e-10);
+            assert_approx_eq(polyval(p2, a), diffsin<0>(a), 1e-10);
+            assert_approx_eq(polyval(p3, a), diffsin<0>(a), 1e-10);
+
+            assert_approx_eq(polyval(polyder(p1), a), diffsin<1>(a), 1e-10);
+            assert_approx_eq(polyval(polyder(p2), a), diffsin<1>(a), 1e-10);
+            assert_approx_eq(polyval(polyder(p3), a), diffsin<1>(a), 1e-10);
+
+            assert_approx_eq(polyval(polyder(polyder(p2)), a), diffsin<2>(a),
+                             1e-10);
+            assert_approx_eq(polyval(polyder(polyder(p3)), a), diffsin<2>(a),
+                             1e-10);
+
+            assert_approx_eq(polyval(polyder(polyder(polyder(p3))), a),
+                             diffsin<3>(a), 1e-10);
         }
     }
     printf("Done.\n");
