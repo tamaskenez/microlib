@@ -126,45 +126,4 @@ struct range_code<InlineVector<T, N>> : std::integral_constant<ptrdiff_t, N>
 {
 };
 
-template <class T, size_t N>
-struct sequence_compile_time_size_traits<InlineVector<T, N>>
-{
-    static constexpr size_t capacity = N;
-    static constexpr size_t size = c_runtime_size_marker;
-};
-
-template <class T, size_t N>
-struct array_or_inlinevector_or_vector<T, N, true, false>
-{
-    using type = ul::InlineVector<T, N>;
-};
-
-template <class T, size_t CompileTimeCapacityOrSize, bool HasCompileTimeSize>
-constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(
-    size_t runtime_size)
-{
-    if constexpr (CompileTimeCapacityOrSize != c_runtime_size_marker) {
-        if constexpr (HasCompileTimeSize)
-            return std::array<T, CompileTimeCapacityOrSize>{};
-        else
-            return InlineVector<T, CompileTimeCapacityOrSize>(runtime_size, 0);
-    } else
-        return std::vector<T>(runtime_size, 0);
-}
-
-template <class T, size_t CompileTimeCapacityOrSize, bool HasCompileTimeSize>
-constexpr auto make_uninitialized_array_or_inlinevector_or_vector(
-    size_t runtime_size)
-{
-    if constexpr (CompileTimeCapacityOrSize != c_runtime_size_marker) {
-        if constexpr (HasCompileTimeSize)
-            return std::array<T, CompileTimeCapacityOrSize>();
-        else
-            return InlineVector<T, CompileTimeCapacityOrSize>(runtime_size,
-                                                              uninitialized);
-    } else
-        return std::vector<T>(runtime_size,
-                              0);  // no unitialized vector available
-}
-
 }  // namespace ul

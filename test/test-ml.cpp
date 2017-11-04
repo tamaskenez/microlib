@@ -10,6 +10,8 @@
 #include "ul/ul.h"
 
 using std::array;
+using std::vector;
+
 using ul::conv;
 using ul::make_span;
 using ul::polyder;
