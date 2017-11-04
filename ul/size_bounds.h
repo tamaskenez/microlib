@@ -118,11 +118,6 @@ struct size_bounds_expression
     constexpr static int compile_time_capacity = Subtype::compile_time_capacity;
     constexpr static int compile_time_size = Subtype::compile_time_size;
 
-    // If this constructor is not defined, if crashes with this in Release mode:
-    // Xcode: Build version 9B55
-    // clang: Apple LLVM version 9.0.0 (clang-900.0.38)
-    ~size_bounds_expression() {}
-
     int runtime_size() const { return as_subtype().runtime_size(); }
 
     const Subtype& as_subtype() const
@@ -183,13 +178,14 @@ struct size_bounds_sum : size_bounds_expression<size_bounds_sum<X, Y>>
             ? c_runtime_size_marker
             : X::compile_time_size + Y::compile_time_size;
 
-    size_bounds_sum(const X& x, const Y& y) : x(x), y(y) {}
+    size_bounds_sum(const X& x, const Y& y)
+        : size(x.runtime_size() + y.runtime_size())
+    {}
 
-    int runtime_size() const { return x.runtime_size() + y.runtime_size(); }
+    int runtime_size() const { return size; }
 
 private:
-    const X& x;
-    const Y& y;
+    const int size;
 };
 
 template <class X, class Y>
@@ -206,13 +202,14 @@ struct size_bounds_product : size_bounds_expression<size_bounds_product<X, Y>>
             ? c_runtime_size_marker
             : X::compile_time_size * Y::compile_time_size;
 
-    size_bounds_product(const X& x, const Y& y) : x(x), y(y) {}
+    size_bounds_product(const X& x, const Y& y)
+        : size(x.runtime_size() * y.runtime_size())
+    {}
 
-    int runtime_size() { return x.runtime_size() * y.runtime_size(); }
+    int runtime_size() { return size; }
 
 private:
-    const X& x;
-    const Y& y;
+    const int size;
 };
 
 template <class X, class Y>
@@ -238,16 +235,14 @@ struct size_bounds_min : size_bounds_expression<size_bounds_min<X, Y>>
             ? c_runtime_size_marker
             : std::min(X::compile_time_size, Y::compile_time_size);
 
-    size_bounds_min(const X& x, const Y& y) : x(x), y(y) {}
+    size_bounds_min(const X& x, const Y& y)
+        : size(std::min(x.runtime_size(), y.runtime_size()))
+    {}
 
-    int runtime_size() const
-    {
-        return std::min(x.runtime_size(), y.runtime_size());
-    }
+    int runtime_size() const { return size; }
 
 private:
-    const X& x;
-    const Y& y;
+    const int size;
 };
 
 template <class X, class Y>
@@ -264,16 +259,14 @@ struct size_bounds_max : size_bounds_expression<size_bounds_max<X, Y>>
             ? c_runtime_size_marker
             : std::max(X::compile_time_size, Y::compile_time_size);
 
-    size_bounds_max(const X& x, const Y& y) : x(x), y(y) {}
+    size_bounds_max(const X& x, const Y& y)
+        : size(std::max(x.runtime_size(), y.runtime_size()))
+    {}
 
-    int runtime_size() const
-    {
-        return std::max(x.runtime_size(), y.runtime_size());
-    }
+    int runtime_size() const { return size; }
 
 private:
-    const X& x;
-    const Y& y;
+    const int size;
 };
 
 template <class X>
@@ -287,12 +280,12 @@ struct size_bounds_negation : size_bounds_expression<size_bounds_negation<X>>
         X::compile_time_size == c_runtime_size_marker ? c_runtime_size_marker
                                                       : -X::compile_time_size;
 
-    explicit size_bounds_negation(const X& x) : x(x) {}
+    explicit size_bounds_negation(const X& x) : size(-x.runtime_size()) {}
 
-    int runtime_size() const { return -x.runtime_size(); }
+    int runtime_size() const { return size; }
 
 private:
-    const X& x;
+    const int size;
 };
 
 template <int X>
