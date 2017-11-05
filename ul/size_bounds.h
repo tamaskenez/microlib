@@ -258,16 +258,6 @@ auto max(const size_bounds<A, B>& x, const size_bounds<C, D>& y)
 
 // Trait types for testing the nature of the container
 template <class X>
-struct is_array : std::false_type
-{
-};
-
-template <class T, size_t N>
-struct is_array<std::array<T, N>> : std::true_type
-{
-};
-
-template <class X>
 struct is_inlinevector : std::false_type
 {
 };
@@ -294,7 +284,7 @@ auto get_inlinevector_size_bounds(const InlineVector<T, N>& x)
 template <class X>
 auto get_size_bounds(const X& x)
 {
-    if constexpr (is_array<X>::value)
+    if constexpr (is_std_array<X>::value)
         return get_array_size_bounds(x);
     else if constexpr (is_inlinevector<X>::value)
         return get_inlinevector_size_bounds(x);

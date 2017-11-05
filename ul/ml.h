@@ -102,38 +102,20 @@ auto polyint(const V& p, UL_DECAYDECL(p[0]) C0 = 0)
 // This is the previous implementation of conv, will be removed if the
 // size_bounds-based proves stable.
 
-template <class X, class Y>
-auto conv(const X& x, const Y& y)
+template <class X, class Y, class Result>
+void conv_into_nocheck(const X& x, const Y& y, Result&& result)
 {
-#if 0
-    constexpr size_t conv_result_size(size_t x, size_t y)
-    {
-        return (x == 0 || y == 0) ? 0 : x + y - 1;
+    // result is initialized to zero
+    for (int i = 0; i < x.size(); ++i) {
+        for (int j = 0; j < y.size(); ++j) {
+            result[i + j] += x[i] * y[j];
+        }
     }
+}
 
-    // We need a result array or InlineVector or vector depending on
-    // the compile-time size characteristics of the inputs
-    using r_value_t = decltype(x[0] * y[0]);
-    using x_traits = sequence_compile_time_size_traits<X>;
-    using y_traits = sequence_compile_time_size_traits<Y>;
-
-    constexpr bool has_compile_time_capacity =
-        x_traits::capacity != c_runtime_size_marker &&
-        y_traits::capacity != c_runtime_size_marker;
-    constexpr bool has_compile_time_size =
-        x_traits::size != c_runtime_size_marker &&
-        y_traits::size != c_runtime_size_marker;
-
-    constexpr size_t r_compile_time_capacity_or_size_or_marker =
-        has_compile_time_capacity
-            ? conv_result_size(x_traits::capacity, y_traits::capacity)
-            : c_runtime_size_marker;
-
-    auto result = make_zero_initialized_array_or_inlinevector_or_vector<
-        r_value_t, r_compile_time_capacity_or_size_or_marker,
-        has_compile_time_size>(conv_result_size(x.size(), y.size()));
-#else
-
+template <class X, class Y>
+auto conv_get_result_size_bounds(const X& x, const Y& y)
+{
     auto x_size_bounds = get_size_bounds(x);
     auto y_size_bounds = get_size_bounds(y);
 
@@ -146,25 +128,55 @@ auto conv(const X& x, const Y& y)
             y_size_bounds.compile_time_capacity > 0,
         "conv: first argument has zero size.");
 
-    auto r_size_bounds =
-        max(x_size_bounds + y_size_bounds - size_bounds_constant<1>(),
-            size_bounds_constant<0>());
+    return max(x_size_bounds + y_size_bounds - size_bounds_constant<1>(),
+               size_bounds_constant<0>());
+}
 
-    using r_value_t = decltype(x[0] * y[0]);
-
+template <class X, class Y>
+auto conv(const X& x, const Y& y)
+{
     auto result =
-        make_zero_initialized_array_or_inlinevector_or_vector<r_value_t>(
-            r_size_bounds);
+        make_zero_initialized_array_or_inlinevector_or_vector<decltype(
+            x[0] * y[0])>(conv_get_result_size_bounds(x, y));
 
-#endif
+    conv_into_nocheck(x, y, result);
 
-    // result is initialized to zero
-    for (int i = 0; i < x.size(); ++i) {
-        for (int j = 0; j < y.size(); ++j) {
-            result[i + j] += x[i] * y[j];
-        }
-    }
     return result;
+}
+
+template <class X, class Y, class Result>
+void conv_into(const X& x, const Y& y, Result&& result)
+{
+    auto r_size_bounds_expected = conv_get_result_size_bounds(x, y);
+
+    if constexpr (is_resizable<std::decay_t<Result>>::value) {
+        // if resizable, resize
+        const auto target_size = r_size_bounds_expected.runtime_size();
+
+        // zero at most until current result size
+        std::fill(result.begin(),
+                  result.begin() + std::min<int>(target_size, result.size()),
+                  0);
+
+        // resize and zero the rest
+        result.resize(target_size, 0);
+    } else {
+        // if not resizable, check size ...
+        auto r_size_bounds_actual = get_size_bounds(result);
+        if constexpr (r_size_bounds_actual.compile_time_size ==
+                          c_runtime_size_marker ||
+                      r_size_bounds_expected.compile_time_size ==
+                          c_runtime_size_marker) {
+            // ... at runtime ...
+            CHECK(result.size() == r_size_bounds_expected.runtime_size());
+        } else {
+            // .. or at compile time.
+            static_assert(r_size_bounds_actual.compile_time_size ==
+                          r_size_bounds_expected.compile_time_size);
+        }
+        std::fill(BE(result), 0);
+    }
+    conv_into_nocheck(x, y, result);
 }
 
 }  // namespace ul

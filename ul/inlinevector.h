@@ -3,7 +3,9 @@
 #include <array>
 #include <cassert>
 
+#include "ul/check.h"
 #include "ul/type_traits.h"
+#include "ul/ul.h"
 
 namespace ul {
 
@@ -25,34 +27,42 @@ public:
 
     explicit InlineVector(uninitialized_t) {}
 
-    InlineVector(int n, uninitialized_t) : s(n) { assert(n <= Capacity); }
+    InlineVector(int n, uninitialized_t) : s(n) { CHECK(n <= Capacity); }
 
     explicit InlineVector(int n, const T& x) : s(n)
     {
-        assert(n <= Capacity);
+        CHECK(n <= Capacity);
         for (int i = 0; i < n; ++i)
             a[i] = x;
     }
 
     explicit InlineVector(std::initializer_list<T> x) : s(x.size())
     {
-        assert(x.size() <= Capacity);
-        std::copy(x.begin(), x.end(), a.begin());
+        CHECK(x.size() <= Capacity);
+        std::copy(BE(x), a.begin());
     }
 
     template <class U, size_t N>
     void operator=(const std::array<U, N>& x)
     {
-        static_assert(N <= Capacity);
+        CHECK(x.size() <= Capacity);
         std::copy(BE(x), a.begin());
-        s = N;
+        s = x.size();
     }
 
     int size() const { return s; }
     constexpr int capacity() const { return Capacity; }
     bool empty() const { return s == 0; }
-    T& operator[](int x) { return a[x]; }
-    const T& operator[](int x) const { return a[x]; }
+    T& operator[](int x)
+    {
+        assert(0 <= x && x < s);
+        return a[x];
+    }
+    const T& operator[](int x) const
+    {
+        assert(0 <= x && x < s);
+        return a[x];
+    }
     T& front()
     {
         assert(s > 0);
@@ -91,7 +101,7 @@ public:
     void erase(const_iterator it)
     {
         int idx = it - a.begin();
-        assert(0 <= idx && idx < s);
+        CHECK(0 <= idx && idx < s);
         for (int i = idx; i + 1 < s; ++i)
             a[i] = std::move(a[i + 1]);
         --s;
@@ -101,13 +111,13 @@ public:
 
     void resize(int i, uninitialized_t)
     {
-        assert(0 <= i && i <= Capacity);
+        CHECK(0 <= i && i <= Capacity);
         s = i;
     }
 
     void resize(int i, const T& value = T())
     {
-        assert(0 <= i && i <= Capacity);
+        CHECK(0 <= i && i <= Capacity);
         for (int j = s; j < i; ++j)
             a[j] = value;
         s = i;
@@ -123,6 +133,11 @@ private:
 
 template <class T, int N>
 struct range_code<InlineVector<T, N>> : std::integral_constant<ptrdiff_t, N>
+{
+};
+
+template <class T, int N>
+struct is_resizable<InlineVector<T, N>> : std::true_type
 {
 };
 

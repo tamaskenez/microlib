@@ -17,6 +17,8 @@ using ul::diffcos;
 using ul::diffsin;
 using ul::difftan;
 using ul::make_span;
+using ul::polycompose;
+using ul::polyval;
 using ul::sign;
 using ul::span;
 using ul::within_co;
@@ -70,6 +72,65 @@ template <class F>
 std::function<double(double)> approx_deriv(F&& f)
 {
     return [f](double x) { return approx_deriv(f, x); };
+}
+
+constexpr int pcn(int x, int y)
+{
+    return (x - 1) * (y - 1) + 1;
+}
+
+template <class ExpectedResultType, class P, class Q>
+void test_polycompose(P& p, Q& q)
+{
+    FOR(i, 0, < p.size()) p[i] = p.size() - i + 1;
+    FOR(i, 0, < q.size()) q[i] = q.size() - i + 1;
+    assert(p.back() == 2);
+    assert(q.back() == 2);
+    FOR(phase, 1, <= 2)
+    {
+        auto pq = polycompose(p, q);
+        static_assert(std::is_same<ExpectedResultType, decltype(pq)>::value);
+        assert(pq.size() == pcn(p.size(), q.size()));
+
+        FOR(x, -4, <= 4)
+        {
+            auto pqx_expected = polyval(p, polyval(q, x));
+            auto pqx_actual = polyval(pq, x);
+            assert(pqx_actual == pqx_expected);
+        }
+        for (auto& i : p)
+            i = -i;
+        for (auto& i : q)
+            i = -i;
+    }
+}
+
+template <size_t N>
+using A = std::array<int, N>;
+template <int N>
+using IV = ul::InlineVector<int, N>;
+using V = std::vector<int>;
+
+template <int NP, int NQ>
+void test_polycompose()
+{
+    A<NP> pa;
+    A<NQ> qa;
+    const int NPC = NP + 2;
+    const int NQC = NQ + 3;
+    IV<NPC> piv(NP, ul::uninitialized);
+    IV<NQC> qiv(NQ, ul::uninitialized);
+    V pv(NP), qv(NQ);
+
+    test_polycompose<A<pcn(NP, NQ)>>(pa, qa);
+    test_polycompose<IV<pcn(NP, NQC)>>(pa, qiv);
+    test_polycompose<V>(pa, qv);
+    test_polycompose<IV<pcn(NPC, NQ)>>(piv, qa);
+    test_polycompose<IV<pcn(NPC, NQC)>>(piv, qiv);
+    test_polycompose<V>(piv, qv);
+    test_polycompose<V>(pv, qa);
+    test_polycompose<V>(pv, qiv);
+    test_polycompose<V>(pv, qv);
 }
 
 int main()
@@ -210,6 +271,33 @@ int main()
             assert_approx_eq(polyval(polyder(polyder(polyder(p3))), a),
                              diffsin<3>(a), 1e-10);
         }
+    }
+    {
+        test_polycompose<1, 1>();
+        test_polycompose<1, 2>();
+        test_polycompose<1, 3>();
+        test_polycompose<1, 4>();
+        test_polycompose<1, 5>();
+        test_polycompose<2, 1>();
+        test_polycompose<2, 2>();
+        test_polycompose<2, 3>();
+        test_polycompose<2, 4>();
+        test_polycompose<2, 5>();
+        test_polycompose<3, 1>();
+        test_polycompose<3, 2>();
+        test_polycompose<3, 3>();
+        test_polycompose<3, 4>();
+        test_polycompose<3, 5>();
+        test_polycompose<4, 1>();
+        test_polycompose<4, 2>();
+        test_polycompose<4, 3>();
+        test_polycompose<4, 4>();
+        test_polycompose<4, 5>();
+        test_polycompose<5, 1>();
+        test_polycompose<5, 2>();
+        test_polycompose<5, 3>();
+        test_polycompose<5, 4>();
+        test_polycompose<5, 5>();
     }
     printf("Done.\n");
     return 0;

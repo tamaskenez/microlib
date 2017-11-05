@@ -8,6 +8,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "ul/type_traits.h"
+
 // minimal implementation (just what was needed) of the 1-D span concept,
 // that is: span encapsulates a contiguous memory block
 
@@ -156,5 +158,10 @@ std::string to_string(span<T> x)
     s += "}";
     return s;
 }
+
+template <class T>
+struct is_resizable<span<T>> : std::false_type
+{
+};
 
 }  // namespace ul

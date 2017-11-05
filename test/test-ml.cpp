@@ -13,6 +13,7 @@ using std::array;
 using std::vector;
 
 using ul::conv;
+using ul::conv_into;
 using ul::make_span;
 using ul::polyder;
 using ul::polyint;
@@ -49,6 +50,11 @@ void test_conv(const X& x, const Y& y)
     auto r = conv(x, y);
     static_assert(std::is_same<decltype(r), ExpectedResultType>::value);
     assert(r.size() == x.size() + y.size() - 1);
+    assert(std::equal(BE(r), BE(expected)));
+    std::fill(BE(r), 999999);
+    if constexpr (!ul::is_std_array<ExpectedResultType>::value)
+        r.resize(r.size() / 2);
+    conv_into(x, y, r);
     assert(std::equal(BE(r), BE(expected)));
 }
 

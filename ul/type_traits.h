@@ -40,12 +40,35 @@ struct range_code<std::array<T, N>>
 };
 
 template <class T>
+struct is_resizable;
+
+template <class T, size_t N>
+struct is_resizable<std::array<T, N>> : std::false_type
+{
+};
+
+template <class T>
+struct is_resizable<std::vector<T>> : std::true_type
+{
+};
+
+template <class T>
 struct value_type
 {
     using T1 =
         decltype(*std::begin(std::declval<typename std::add_const<T>::type>()));
     using type = typename std::decay<decltype(
         *std::begin(std::declval<typename std::add_const<T>::type>()))>::type;
+};
+
+template <class X>
+struct is_std_array : std::false_type
+{
+};
+
+template <class T, size_t N>
+struct is_std_array<std::array<T, N>> : std::true_type
+{
 };
 
 }  // namespace ul

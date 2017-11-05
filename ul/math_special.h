@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "ul/math.h"
+#include "ul/size_bounds.h"
 #include "ul/span.h"
+#include "ul/ul.h"
 
 // special mathematical functions
 namespace ul {
@@ -164,6 +166,118 @@ std::array<T, Deg + 1> taylor_sin(T a)
         }
     }
     return v;
+}
+
+// p and q are two functions described as polynomials. This function creates the
+// polynomial for p(q(x)).
+template <class P, class Q>
+auto polycompose(const P& p, const Q& q)
+{
+    auto p_bounds = get_size_bounds(p);
+    auto q_bounds = get_size_bounds(q);
+    static_assert(p_bounds.compile_time_capacity > 0 &&
+                      q_bounds.compile_time_capacity > 0,
+                  "polycompose: both input arguments must be non-empty.");
+    CHECK(p_bounds.runtime_size() > 0 && q_bounds.runtime_size() > 0,
+          "polycompose: both input arguments must be non-empty.");
+    size_bounds_constant<1> sb_one;
+    size_bounds_constant<2> sb_two;
+    auto r_bounds =
+        (p_bounds - sb_one) * (q_bounds - sb_one) +
+        sb_one;  // results' degree = product of degrees of the inputs
+    using r_value_t = decltype(p[0] * q[0]);
+    auto result =
+        make_zero_initialized_array_or_inlinevector_or_vector<r_value_t>(
+            r_bounds);
+
+    // Now we calculate p(y) where y = q(x). The sum p(y) consists of `coeff *
+    // y^i` terms. First i = 0 -> result += p[0] * q^0 = p[0]
+    result[0] = p[0];  // Using the fact that it's zero-initialized
+
+    // Do we need more than q^0?
+    if constexpr (p_bounds.compile_time_size != c_runtime_size_marker) {
+        if constexpr (p_bounds.compile_time_size <= 1)
+            return result;
+    } else {
+        // Need to check it in runtime
+        if (p.size() <= 1)
+            return result;
+    }
+
+    // Next, i = 1 -> result += x * p[1] * q^1 = x * p[1] * q
+    FOR(j, 0, < q.size()) { result[j] += p[1] * q[j]; }
+
+    // Do we need more than q^1?
+    if constexpr (p_bounds.compile_time_size != c_runtime_size_marker) {
+        if constexpr (p_bounds.compile_time_size <= 2)
+            return result;
+    } else {
+        // Need to check it in runtime
+        if (p.size() <= 2)
+            return result;
+    }
+
+    // And all the rest: result += x^i * p[i] * q^i
+    // First create q^2
+    auto q_ad_i =
+        make_zero_initialized_array_or_inlinevector_or_vector<r_value_t>(
+            r_bounds);
+    FOR(ja, 0, < q.size())
+    {
+        q_ad_i[2 * ja] += q[ja] * q[ja];
+        FOR(jb, ja + 1, < q.size())
+        q_ad_i[ja + jb] += 2 * q[ja] * q[jb];
+    }
+    int q_ad_i_highest_nonzero_ix = 2 * (q.size() - 1);
+    FOR(j, 0, <= q_ad_i_highest_nonzero_ix) { result[j] += p[2] * q_ad_i[j]; }
+
+    // Do we need more than q^2?
+    if constexpr (p_bounds.compile_time_size != c_runtime_size_marker) {
+        if constexpr (p_bounds.compile_time_size <=
+                      3)  // size == 3 -> degs == 2
+            return result;
+    } else {
+        // Need to check it in runtime
+        if (p.size() <= 3)
+            return result;
+    }
+    if constexpr (p_bounds.compile_time_size == c_runtime_size_marker ||
+                  p_bounds.compile_time_size > 3) {
+        // We need a temporary intermediate storage for the `q_ad_i =
+        // conv(q_ad_i, q)` operation. It must hold at most q^(i-1)
+        auto q_ad_i_copy_bounds =
+            (q_bounds - sb_one) * (p_bounds - sb_two) + sb_one;
+
+        auto q_ad_i_copy =
+            make_uninitialized_array_or_inlinevector_or_vector<r_value_t>(
+                q_ad_i_copy_bounds);
+
+        // Enter loop for i at 2
+        for (int i = 3; i < p.size(); ++i) {
+            // On first iteration we have q^2 in q_ad_i
+
+            // Copy q_ad_i to temp storage.
+            FOR(j, 0, <= q_ad_i_highest_nonzero_ix)
+            {
+                q_ad_i_copy[j] = q_ad_i[j];
+            }
+
+            auto q_ad_i_copy_span =
+                make_span(q_ad_i_copy.data(), q_ad_i_highest_nonzero_ix + 1);
+            q_ad_i_highest_nonzero_ix = i * (q.size() - 1);
+
+            // q_ad_i = conv(q_ad_i, q)
+            conv_into(q_ad_i_copy_span, q,
+                      make_span(q_ad_i.data(), q_ad_i_highest_nonzero_ix + 1));
+
+            // result += x^i * p[i] * q_ad_i;
+            FOR(j, 0, <= q_ad_i_highest_nonzero_ix)
+            {
+                result[j] += p[i] * q_ad_i[j];
+            }
+        }
+        return result;
+    }
 }
 
 }  // namespace ul
