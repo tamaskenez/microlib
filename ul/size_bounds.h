@@ -17,8 +17,8 @@ namespace ul {
 // There are two solutions here, first one is deprecated, it's more complicated
 // to use but maybe easier to implement with C++11-like features.
 
-// The second one is a relatively simple (thought expression-template-based)
-// implementation and much simpler to use. See below.
+// The second one is a relatively simple implementation and much simpler to use.
+// See below.
 
 // #### COMMON CODE FOR BOTH SOLUTIONS ####
 
@@ -162,114 +162,77 @@ constexpr auto make_uninitialized_array_or_inlinevector_or_vector(
 //     return result;
 // }
 
-// Base class for the size_bounds expression tree, using the curiously recurring
-// template pattern.
-template <class Subtype>
-struct size_bounds_expression
+template <int Capacity, int Size>
+struct size_bounds
 {
-    constexpr static int compile_time_capacity = Subtype::compile_time_capacity;
-    constexpr static int compile_time_size = Subtype::compile_time_size;
+    constexpr static int compile_time_capacity = Capacity;
+    constexpr static int compile_time_size = Size;
 
-    int runtime_size() const { return as_subtype().runtime_size(); }
+    explicit size_bounds(int s) : s(s) {}
+    int runtime_size() const { return s; }
 
-    const Subtype& as_subtype() const
-    {
-        return *static_cast<const Subtype*>(this);
-    }
+private:
+    const int s;
 };
 
 // A constant that describes a compile-time known capacity == size values.
 template <int X>
-struct size_bounds_constant : size_bounds_expression<size_bounds_constant<X>>
+struct size_bounds_constant : size_bounds<X, X>
 {
-    constexpr static int compile_time_capacity = X;
-    constexpr static int compile_time_size = X;
-
-    constexpr int runtime_size() const { return X; }
+    size_bounds_constant() : size_bounds<X, X>(X) {}
 };
 
 // A constant that describes compile-time capacity and runtime size.
 template <int Capacity>
 struct inlinevector_like_size_bounds
-    : size_bounds_expression<inlinevector_like_size_bounds<Capacity>>
+    : size_bounds<Capacity, c_runtime_size_marker>
 {
-    constexpr static int compile_time_capacity = Capacity;
-    constexpr static int compile_time_size = c_runtime_size_marker;
-
-    explicit inlinevector_like_size_bounds(int size) : size(size) {}
-
-    int runtime_size() const { return size; }
-
-private:
-    const int size;
+    explicit inlinevector_like_size_bounds(int size)
+        : size_bounds<Capacity, c_runtime_size_marker>(size)
+    {}
 };
 
 // A constant that describes runtime capacity (ignored) and size.
-struct vector_like_size_bounds : size_bounds_expression<vector_like_size_bounds>
+struct vector_like_size_bounds
+    : size_bounds<c_runtime_size_marker, c_runtime_size_marker>
 {
-    constexpr static int compile_time_capacity = c_runtime_size_marker;
-    constexpr static int compile_time_size = c_runtime_size_marker;
-
-    explicit vector_like_size_bounds(int size) : size(size) {}
-
-    int runtime_size() const { return size; }
-
-private:
-    const int size;
+    explicit vector_like_size_bounds(int size) : size_bounds(size) {}
 };
 
-// Universal base class for binary ops in the expression tree. Automatically
-// returns c_runtime_size_marker in compile-time if at least one of the operands
-// are not known in compile-time.
-template <class X, class Y, class F>
-struct size_bounds_binary_op
-    : size_bounds_expression<size_bounds_binary_op<X, Y, F>>
+template <class F>
+static constexpr int eval_size_bounds_op(int x, int y)
 {
-    static constexpr int something(int x, int y)
-    {
-        return x == c_runtime_size_marker || y == c_runtime_size_marker
-                   ? c_runtime_size_marker
-                   : F()(x, y);
-    }
-    static constexpr int compile_time_capacity =
-        something(X::compile_time_capacity, Y::compile_time_capacity);
-    static constexpr int compile_time_size =
-        something(X::compile_time_size, Y::compile_time_size);
-
-    size_bounds_binary_op(const X& x, const Y& y)
-        : size(F()(x.runtime_size(), y.runtime_size()))
-    {}
-
-    int runtime_size() const { return size; }
-
-private:
-    const int size;
-};
-
-// Overloaded operators for the expression-tree.
-
-template <class X, class Y>
-auto operator+(const size_bounds_expression<X>& x,
-               const size_bounds_expression<Y>& y)
-{
-    return size_bounds_binary_op<X, Y, std::plus<int>>(x.as_subtype(),
-                                                       y.as_subtype());
+    return x == c_runtime_size_marker || y == c_runtime_size_marker
+               ? c_runtime_size_marker
+               : F()(x, y);
 }
 
-template <class X, class Y>
-auto operator-(const size_bounds_expression<X>& x,
-               const size_bounds_expression<Y>& y)
+template <class F, class X, class Y>
+auto make_size_bounds_binary_op(const X& x, const Y& y)
 {
-    return size_bounds_binary_op<X, Y, std::minus<int>>(x.as_subtype(),
-                                                        y.as_subtype());
+    return size_bounds<eval_size_bounds_op<F>(X::compile_time_capacity,
+                                              Y::compile_time_capacity),
+                       eval_size_bounds_op<F>(X::compile_time_size,
+                                              Y::compile_time_size)>(
+        F()(x.runtime_size(), y.runtime_size()));
 }
 
-template <class X, class Y>
-auto operator*(const size_bounds_expression<X>& x,
-               const size_bounds_expression<Y>& y)
+template <int A, int B, int C, int D>
+auto operator+(const size_bounds<A, B>& x, const size_bounds<C, D>& y)
 {
-    return size_bounds_binary_op<X, Y, std::multiplies<int>>(x.as_subtype(),
-                                                             y.as_subtype());
+    return make_size_bounds_binary_op<std::plus<int>>(x, y);
+}
+
+template <int A, int B, int C, int D>
+auto operator-(const size_bounds<A, B>& x, const size_bounds<C, D>& y)
+{
+    return make_size_bounds_binary_op<std::minus<int>>(x, y);
+}
+
+template <int A, int B, int C, int D>
+auto operator*(const size_bounds<A, B>& x, const size_bounds<C, D>& y)
+{
+    return make_size_bounds_binary_op<std::multiplies<int>>(x, y);
 }
 
 struct size_bounds_function_object_min
@@ -281,18 +244,16 @@ struct size_bounds_function_object_max
     constexpr int operator()(int x, int y) const { return std::max(x, y); }
 };
 
-template <class X, class Y>
-auto min(const size_bounds_expression<X>& x, const size_bounds_expression<Y>& y)
+template <int A, int B, int C, int D>
+auto min(const size_bounds<A, B>& x, const size_bounds<C, D>& y)
 {
-    return size_bounds_binary_op<X, Y, size_bounds_function_object_min>(
-        x.as_subtype(), y.as_subtype());
+    return make_size_bounds_binary_op<size_bounds_function_object_min>(x, y);
 }
 
-template <class X, class Y>
-auto max(const size_bounds_expression<X>& x, const size_bounds_expression<Y>& y)
+template <int A, int B, int C, int D>
+auto max(const size_bounds<A, B>& x, const size_bounds<C, D>& y)
 {
-    return size_bounds_binary_op<X, Y, size_bounds_function_object_max>(
-        x.as_subtype(), y.as_subtype());
+    return make_size_bounds_binary_op<size_bounds_function_object_max>(x, y);
 }
 
 // Trait types for testing the nature of the container
@@ -344,8 +305,7 @@ auto get_size_bounds(const X& x)
 // Create zero-initialized or uninitialized containers from a size_bounds
 // expression with an appropriate container.
 template <class T, class X>
-constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(
-    const size_bounds_expression<X>& x)
+constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(const X& x)
 {
     if constexpr (X::compile_time_size != c_runtime_size_marker)
         return std::array<T, X::compile_time_size>{};
@@ -356,8 +316,7 @@ constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(
 }
 
 template <class T, class X>
-constexpr auto make_uninitialized_array_or_inlinevector_or_vector(
-    const size_bounds_expression<X>& x)
+constexpr auto make_uninitialized_array_or_inlinevector_or_vector(const X& x)
 {
     if constexpr (X::compile_time_size != c_runtime_size_marker)
         return std::array<T, X::compile_time_size>();
