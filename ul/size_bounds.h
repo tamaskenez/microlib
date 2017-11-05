@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "ul/inlinevector.h"
 
 namespace ul {
@@ -8,9 +10,25 @@ namespace ul {
 // which could take and return views and containers of various compile-time
 // / runtime size characteristics.
 //
-// That is, a function, depending on whether is input sequences (ranges,
+// That is, a function, depending on whether the input parameters (ranges,
 // views, containers, whatever) have compile-time or runtime capacity or
 // size could return an array, InlineVector or vector.
+
+// There are two solutions here, first one is deprecated, it's more complicated
+// to use but maybe easier to implement with C++11-like features.
+
+// The second one is a relatively simple (thought expression-template-based)
+// implementation and much simpler to use. See below.
+
+// #### COMMON CODE FOR BOTH SOLUTIONS ####
+
+// Note: we use `int` for everything to avoid surprising wrapovers in
+// calculations (sometimes we need things like (max(size1 + size2 - 1, 0))
+
+// unique value meaning i-don't-know-this-in-compile-time
+static constexpr int c_runtime_size_marker = INT_MAX;
+
+// #### DEPRECATED SOLUTION ####
 
 // First we need to know if a particular sequence type has runtime or
 // compile-time capacity and size. This trait type is to be extended
@@ -21,9 +39,6 @@ namespace ul {
 // - std::array has compile-time capacity and size
 // - ul::InlineVector has compile-time capacity but runtime size
 // - std::vector: all runtime
-
-// unique value meaning i-don't-know-this-in-compile-time
-static constexpr size_t c_runtime_size_marker = INT_MAX;
 
 // traits giving compile-time capacity and size values. For InlineVector it
 // is implemented in its header.
@@ -82,6 +97,8 @@ struct array_or_inlinevector_or_vector<T, N, true, false>
     using type = ul::InlineVector<T, N>;
 };
 
+// These functions return a container that satisfies the requirements and may be
+// initialized to zero.
 template <class T, size_t CompileTimeCapacityOrSize, bool HasCompileTimeSize>
 constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(
     size_t runtime_size)
@@ -110,8 +127,43 @@ constexpr auto make_uninitialized_array_or_inlinevector_or_vector(
                               0);  // no unitialized vector available
 }
 
-// ----------------------------------
+// #### IMPROVED SOLUTION ####
 
+// This solution introduces the concept of a weird type that contains two
+// integers, a capacity and a size value. The type is weird because it can
+// describe the capacity and size of all these types:
+//
+// - std::array, with compile-type size (which is its capacity, too)
+// - ul::InlineVector, with compile-type capacity and runtime size
+// - std::vector, with runtime capacity and runtime size
+//
+// You can create expressions with this type like `min(x + y - 1, 0)` and ask
+// the result of the expression both in compile time and in runtime. The result
+// will depend on the source of the x and y variables, that is, whether they
+// represent the capacity/size of an array, InlineVector or vector (or span).
+//
+// For the capacity value, in compile time you either the actual capacity
+// (std::array and ul::InlineVector) or the special value c_runtime_size_marker.
+//
+// For the size value, in compile time you either get the actual size
+// (std::array) or the special value c_runtime_size_marker. Then, in runtime you
+// can ask the actual runtime size which is always a concrete value.
+//
+// Example:
+//
+// template<X, Y>
+// auto myfun(const X& x, const Y& y) {
+//     auto x_bounds = get_size_bounds(x);
+//     auto y_bounds = get_size_bounds(x);
+//     auto result_bounds = min(x + y - size_bounds_constant(1));
+//     auto result =
+//       make_zero_initialized_array_or_inlinevector_or_vector(result_bounds);
+//     for(...) result[i] = ...;
+//     return result;
+// }
+
+// Base class for the size_bounds expression tree, using the curiously recurring
+// template pattern.
 template <class Subtype>
 struct size_bounds_expression
 {
@@ -126,16 +178,17 @@ struct size_bounds_expression
     }
 };
 
-template <int Size>
-struct array_like_size_bounds
-    : size_bounds_expression<array_like_size_bounds<Size>>
+// A constant that describes a compile-time known capacity == size values.
+template <int X>
+struct size_bounds_constant : size_bounds_expression<size_bounds_constant<X>>
 {
-    constexpr static int compile_time_capacity = Size;
-    constexpr static int compile_time_size = Size;
+    constexpr static int compile_time_capacity = X;
+    constexpr static int compile_time_size = X;
 
-    int runtime_size() const { return Size; }
+    constexpr int runtime_size() const { return X; }
 };
 
+// A constant that describes compile-time capacity and runtime size.
 template <int Capacity>
 struct inlinevector_like_size_bounds
     : size_bounds_expression<inlinevector_like_size_bounds<Capacity>>
@@ -151,6 +204,7 @@ private:
     const int size;
 };
 
+// A constant that describes runtime capacity (ignored) and size.
 struct vector_like_size_bounds : size_bounds_expression<vector_like_size_bounds>
 {
     constexpr static int compile_time_capacity = c_runtime_size_marker;
@@ -164,79 +218,26 @@ private:
     const int size;
 };
 
-template <class X, class Y>
-struct size_bounds_sum : size_bounds_expression<size_bounds_sum<X, Y>>
+// Universal base class for binary ops in the expression tree. Automatically
+// returns c_runtime_size_marker in compile-time if at least one of the operands
+// are not known in compile-time.
+template <class X, class Y, class F>
+struct size_bounds_binary_op
+    : size_bounds_expression<size_bounds_binary_op<X, Y, F>>
 {
-    constexpr static int compile_time_capacity =
-        (X::compile_time_capacity == c_runtime_size_marker ||
-         Y::compile_time_capacity == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : X::compile_time_capacity + Y::compile_time_capacity;
-    constexpr static int compile_time_size =
-        (X::compile_time_size == c_runtime_size_marker ||
-         Y::compile_time_size == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : X::compile_time_size + Y::compile_time_size;
-
-    size_bounds_sum(const X& x, const Y& y)
-        : size(x.runtime_size() + y.runtime_size())
-    {}
-
-    int runtime_size() const { return size; }
-
-private:
-    const int size;
-};
-
-template <class X, class Y>
-struct size_bounds_product : size_bounds_expression<size_bounds_product<X, Y>>
-{
-    constexpr static int compile_time_capacity =
-        (X::compile_time_capacity == c_runtime_size_marker ||
-         Y::compile_time_capacity == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : X::compile_time_capacity * Y::compile_time_capacity;
-    constexpr static int compile_time_size =
-        (X::compile_time_size == c_runtime_size_marker ||
-         Y::compile_time_size == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : X::compile_time_size * Y::compile_time_size;
-
-    size_bounds_product(const X& x, const Y& y)
-        : size(x.runtime_size() * y.runtime_size())
-    {}
-
-    int runtime_size() { return size; }
-
-private:
-    const int size;
-};
-
-template <class X, class Y>
-struct size_bounds_min : size_bounds_expression<size_bounds_min<X, Y>>
-{
-    // For capacity we prefer a conservative estimation, so the
-    // compile_time_capacity is not a strict min, if one is compile time
-    // and the other is runtime, the compile-time value will be returned in
-    // compile-time.
-    constexpr static int compile_time_capacity =
-        X::compile_time_capacity == c_runtime_size_marker
-            ? (Y::compile_time_capacity == c_runtime_size_marker
+    static constexpr int something(int x, int y)
+    {
+        return x == c_runtime_size_marker || y == c_runtime_size_marker
                    ? c_runtime_size_marker
-                   : Y::compile_time_capacity)
-            : (Y::compile_time_capacity == c_runtime_size_marker
-                   ? X::compile_time_capacity
-                   : std::min(X::compile_time_capacity,
-                              Y::compile_time_capacity));
-    // For size we need exact values
-    constexpr static int compile_time_size =
-        (X::compile_time_size == c_runtime_size_marker ||
-         Y::compile_time_size == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : std::min(X::compile_time_size, Y::compile_time_size);
+                   : F()(x, y);
+    }
+    static constexpr int compile_time_capacity =
+        something(X::compile_time_capacity, Y::compile_time_capacity);
+    static constexpr int compile_time_size =
+        something(X::compile_time_size, Y::compile_time_size);
 
-    size_bounds_min(const X& x, const Y& y)
-        : size(std::min(x.runtime_size(), y.runtime_size()))
+    size_bounds_binary_op(const X& x, const Y& y)
+        : size(F()(x.runtime_size(), y.runtime_size()))
     {}
 
     int runtime_size() const { return size; }
@@ -245,92 +246,56 @@ private:
     const int size;
 };
 
-template <class X, class Y>
-struct size_bounds_max : size_bounds_expression<size_bounds_max<X, Y>>
-{
-    constexpr static int compile_time_capacity =
-        (X::compile_time_capacity == c_runtime_size_marker ||
-         Y::compile_time_capacity == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : std::max(X::compile_time_capacity, Y::compile_time_capacity);
-    constexpr static int compile_time_size =
-        (X::compile_time_size == c_runtime_size_marker ||
-         Y::compile_time_size == c_runtime_size_marker)
-            ? c_runtime_size_marker
-            : std::max(X::compile_time_size, Y::compile_time_size);
-
-    size_bounds_max(const X& x, const Y& y)
-        : size(std::max(x.runtime_size(), y.runtime_size()))
-    {}
-
-    int runtime_size() const { return size; }
-
-private:
-    const int size;
-};
-
-template <class X>
-struct size_bounds_negation : size_bounds_expression<size_bounds_negation<X>>
-{
-    constexpr static int compile_time_capacity =
-        X::compile_time_capacity == c_runtime_size_marker
-            ? c_runtime_size_marker
-            : -X::compile_time_capacity;
-    constexpr static int compile_time_size =
-        X::compile_time_size == c_runtime_size_marker ? c_runtime_size_marker
-                                                      : -X::compile_time_size;
-
-    explicit size_bounds_negation(const X& x) : size(-x.runtime_size()) {}
-
-    int runtime_size() const { return size; }
-
-private:
-    const int size;
-};
-
-template <int X>
-struct size_bounds_constant : size_bounds_expression<size_bounds_constant<X>>
-{
-    constexpr static int compile_time_capacity = X;
-    constexpr static int compile_time_size = X;
-
-    constexpr int runtime_size() const { return X; }
-};
+// Overloaded operators for the expression-tree.
 
 template <class X, class Y>
 auto operator+(const size_bounds_expression<X>& x,
                const size_bounds_expression<Y>& y)
 {
-    return size_bounds_sum<X, Y>(x.as_subtype(), y.as_subtype());
+    return size_bounds_binary_op<X, Y, std::plus<int>>(x.as_subtype(),
+                                                       y.as_subtype());
 }
 
 template <class X, class Y>
 auto operator-(const size_bounds_expression<X>& x,
                const size_bounds_expression<Y>& y)
 {
-    return size_bounds_sum<X, size_bounds_negation<Y>>(
-        x.as_subtype(), size_bounds_negation<Y>(y.as_subtype()));
+    return size_bounds_binary_op<X, Y, std::minus<int>>(x.as_subtype(),
+                                                        y.as_subtype());
 }
 
 template <class X, class Y>
 auto operator*(const size_bounds_expression<X>& x,
                const size_bounds_expression<Y>& y)
 {
-    return size_bounds_product<X, Y>(x.as_subtype(), y.as_subtype());
+    return size_bounds_binary_op<X, Y, std::multiplies<int>>(x.as_subtype(),
+                                                             y.as_subtype());
 }
+
+struct size_bounds_function_object_min
+{
+    constexpr int operator()(int x, int y) const { return std::min(x, y); }
+};
+struct size_bounds_function_object_max
+{
+    constexpr int operator()(int x, int y) const { return std::max(x, y); }
+};
 
 template <class X, class Y>
 auto min(const size_bounds_expression<X>& x, const size_bounds_expression<Y>& y)
 {
-    return size_bounds_min<X, Y>(x.as_subtype(), y.as_subtype());
+    return size_bounds_binary_op<X, Y, size_bounds_function_object_min>(
+        x.as_subtype(), y.as_subtype());
 }
 
 template <class X, class Y>
 auto max(const size_bounds_expression<X>& x, const size_bounds_expression<Y>& y)
 {
-    return size_bounds_max<X, Y>(x.as_subtype(), y.as_subtype());
+    return size_bounds_binary_op<X, Y, size_bounds_function_object_max>(
+        x.as_subtype(), y.as_subtype());
 }
 
+// Trait types for testing the nature of the container
 template <class X>
 struct is_array : std::false_type
 {
@@ -351,10 +316,12 @@ struct is_inlinevector<InlineVector<T, N>> : std::true_type
 {
 };
 
+// Return the appropriate expression describing the capacity/size
+// characteristics for a container.
 template <class T, size_t N>
 auto get_array_size_bounds(const std::array<T, N>&)
 {
-    return array_like_size_bounds<N>();
+    return size_bounds_constant<N>();
 }
 
 template <class T, int N>
@@ -374,6 +341,8 @@ auto get_size_bounds(const X& x)
         return vector_like_size_bounds(x.size());
 }
 
+// Create zero-initialized or uninitialized containers from a size_bounds
+// expression with an appropriate container.
 template <class T, class X>
 constexpr auto make_zero_initialized_array_or_inlinevector_or_vector(
     const size_bounds_expression<X>& x)
@@ -396,8 +365,12 @@ constexpr auto make_uninitialized_array_or_inlinevector_or_vector(
         return InlineVector<T, X::compile_time_capacity>(x.runtime_size(),
                                                          uninitialized);
     else
-        return std::vector<T>(
-            x.runtime_size());  // no uninitialized vector available
+        return std::vector<T>(x.runtime_size());  // it's difficult to create
+                                                  // uninitialized vector
+                                                  // (custom allocator
+                                                  // business) so here we
+                                                  // supply the regular,
+                                                  // zero-initialized vector
 }
 
 }  // namespace ul
