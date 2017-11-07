@@ -7,6 +7,7 @@
 
 #include "ul/check.h"
 #include "ul/inlinevector.h"
+#include "ul/math.h"
 #include "ul/size_bounds.h"
 #include "ul/type_traits.h"
 
@@ -177,6 +178,18 @@ void conv_into(const X& x, const Y& y, Result&& result)
         std::fill(BE(result), 0);
     }
     conv_into_nocheck(x, y, result);
+}
+
+template <class T>
+auto rad2deg(T x)
+{
+    return x / M_PI * 180;
+}
+
+template <class T>
+auto deg2rad(T x)
+{
+    return x / 180.0 * M_PI;
 }
 
 }  // namespace ul

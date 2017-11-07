@@ -46,7 +46,7 @@ T square(T x)
 }
 
 template <class T>
-T sec(T x)
+T sec(T x)  // secant
 {
     return 1 / cos(x);
 }
