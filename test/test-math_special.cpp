@@ -299,6 +299,20 @@ int main()
         test_polycompose<5, 4>();
         test_polycompose<5, 5>();
     }
+    {
+        using ul::wrap_angle_between_pi;
+        const double TPI = 2 * M_PI;
+        const double p = 1e-12;
+        for (double x = -M_PI + p; x <= M_PI - p; x += .1) {
+            assert_approx_eq(wrap_angle_between_pi(x), x, p);
+            assert_approx_eq(wrap_angle_between_pi(x + TPI), x, p);
+            assert_approx_eq(wrap_angle_between_pi(x + 2 * TPI), x, p);
+            assert_approx_eq(wrap_angle_between_pi(x + 20 * TPI), x, p);
+            assert_approx_eq(wrap_angle_between_pi(x - TPI), x, p);
+            assert_approx_eq(wrap_angle_between_pi(x - 2 * TPI), x, p);
+            assert_approx_eq(wrap_angle_between_pi(x - 20 * TPI), x, p);
+        }
+    }
     printf("Done.\n");
     return 0;
 }

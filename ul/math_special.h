@@ -12,6 +12,22 @@
 
 // special mathematical functions
 namespace ul {
+
+template <class T>
+T wrap_angle_between_pi(T x)
+{
+    if (T(-M_PI) <= x) {
+        if (x < T(M_PI))
+            return x;
+        if (x < T(3 * M_PI))
+            return x - T(2 * M_PI);
+    } else if (T(-3 * M_PI) <= x)
+        return x + T(2 * M_PI);
+
+    const T a0 = x / T(M_PI * 2);
+    return (a0 - floor(a0 + T(0.5))) * T(M_PI * 2);
+}
+
 // There are N groups with Ci choices (0 <= i < N). Select a choice from
 // each group 0 <= ci < Ci. Enumerate all possibilites.
 // The function `f` will be called with `span<I>` of length N, containing a
