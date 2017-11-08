@@ -80,5 +80,22 @@ int main()
                 f<23>(a, b, c);
             }
     }
+    {
+        using std::array;
+        using std::vector;
+        using ul::norm;
+        assert(norm(array<double, 2>{{3, 4}}) == 5);
+        assert(norm(vector<double>{{3, 4}}) == 5);
+        assert(norm(array<double, 2>{{4, 3}}) == 5);
+        assert(norm(vector<double>{{4, 3}}) == 5);
+        assert(norm(array<double, 1>{{3}}) == 3);
+        assert(norm(vector<double>{{3}}) == 3);
+        assert(norm(array<double, 0>{{}}) == 0);
+        assert(norm(vector<double>()) == 0);
+        assert(fabs(norm(array<double, 5>{{1.0, 2.0, 3.0, 4.0, 5.0}}) -
+                    7.4162) < 1e-3);
+        assert(fabs(norm(vector<double>{{1.0, 2.0, 3.0, 4.0, 5.0}}) - 7.4162) <
+               1e-3);
+    }
     printf("Done.\n");
 }

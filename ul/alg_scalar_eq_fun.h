@@ -8,6 +8,7 @@ Functions returning scalar from ranges (reduce-like):
 
 */
 
+#include <cmath>
 #include <functional>
 
 #include "ul/type_traits.h"
@@ -31,4 +32,16 @@ DEF_FOLD(prod, std::multiplies<>{})
 DEF_FOLD(min, std::min)
 DEF_FOLD(max, std::max)
 #undef DEF_FOLD
+
+template <class T>
+auto norm(const T& x) -> UL_DECAYDECL(x[0])
+{
+    using Elem = UL_DECAYDECL(x[0]);
+    Elem s(0);
+    if (x.empty())
+        return s;
+    for (const auto& it : x)
+        s += it * it;
+    return sqrt(s);
+}
 }
