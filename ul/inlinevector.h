@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cassert>
+#include <initializer_list>
 
 #include "ul/check.h"
 #include "ul/type_traits.h"
@@ -42,10 +43,26 @@ public:
         std::copy(BE(x), a.begin());
     }
 
+    template <class C>
+    void operator=(const C& x)
+    {
+        CHECK(x.size() <= Capacity);
+        std::copy(BE(x), a.begin());
+        s = x.size();
+    }
+
+    template <class C>
+    void operator=(std::initializer_list<C> x)
+    {
+        CHECK(x.size() <= Capacity);
+        std::copy(BE(x), a.begin());
+        s = x.size();
+    }
+
     template <class U, size_t N>
     void operator=(const std::array<U, N>& x)
     {
-        CHECK(x.size() <= Capacity);
+        static_assert(N <= Capacity);
         std::copy(BE(x), a.begin());
         s = x.size();
     }
