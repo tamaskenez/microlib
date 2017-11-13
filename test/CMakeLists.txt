@@ -17,6 +17,7 @@ set(tests2
     span
     math_special
     ml
+    stopwatch
 )
 
 link_libraries(microlib::microlib)
