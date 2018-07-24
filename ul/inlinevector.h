@@ -30,7 +30,7 @@ public:
 
     InlineVector(int n, uninitialized_t) : s(n) { CHECK(n <= Capacity); }
 
-    explicit InlineVector(int n, const T& x) : s(n)
+    InlineVector(int n, const T& x) : s(n)
     {
         CHECK(n <= Capacity);
         for (int i = 0; i < n; ++i)

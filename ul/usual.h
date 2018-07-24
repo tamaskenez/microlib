@@ -18,8 +18,11 @@ template <class T>
 using up = std::unique_ptr<T>;
 
 using std::array;
+using std::make_pair;
+using std::make_tuple;
 using std::make_unique;
 using std::move;
+using std::pair;
 using std::string;
 using std::tuple;
 using std::vector;
