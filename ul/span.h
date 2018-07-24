@@ -35,7 +35,8 @@ public:
     template <std::size_t N>
     constexpr span(const std::array<std::remove_const_t<T>, N>& arr)
         : d(arr.data()), s(N)
-    {}
+    {
+    }
 
     // assignent from span
     template <typename U,

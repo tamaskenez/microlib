@@ -189,7 +189,8 @@ struct inlinevector_like_size_bounds
 {
     explicit inlinevector_like_size_bounds(int size)
         : size_bounds<Capacity, c_runtime_size_marker>(size)
-    {}
+    {
+    }
 };
 
 // A constant that describes runtime capacity (ignored) and size.
