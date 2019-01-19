@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(microlib)
 
 if(NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
 endif()
 
 set(common_gcc_clang -Wno-shorten-64-to-32 -Wno-sign-compare
@@ -20,14 +20,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         -Wextra -pedantic
         ${common_gcc_clang}
         -Wall -Wnon-virtual-dtor
-        -Wunused -Woverloaded-virtual 
+        -Wunused -Woverloaded-virtual
         -Wno-header-hygiene
         -Wno-missing-prototypes
         )
 elseif(CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "Using Gnu compile options")
     add_compile_options(-Wall -Wextra -Wnon-virtual-dtor -pedantic
-        -Wunused -Woverloaded-virtual 
+        -Wunused -Woverloaded-virtual
         ${common_gcc_clang})
 elseif(MSVC)
     message(STATUS "Using MSVC compile options")
@@ -41,4 +41,3 @@ enable_testing()
 add_subdirectory(ul)
 add_subdirectory(test)
 add_subdirectory(playground)
-
