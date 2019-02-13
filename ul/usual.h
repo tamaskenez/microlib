@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cassert>
+#include <deque>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -18,17 +19,16 @@ template <class T>
 using up = std::unique_ptr<T>;
 
 using std::array;
+using std::deque;
 using std::make_pair;
 using std::make_tuple;
 using std::make_unique;
 using std::move;
 using std::pair;
 using std::string;
+using std::tie;
 using std::tuple;
 using std::vector;
-
-using ul::InlineVector;
-using ul::string_par;
 
 template <typename T>
 using A2 = array<T, 2>;
@@ -48,5 +48,17 @@ using AI4 = A4<int>;
 using VI = vector<int>;
 using VF = vector<float>;
 using VD = vector<double>;
+
+template <class T>
+int operator~(const std::vector<T>& v)
+{
+    return (int)v.size();
+}
+
+template <class T>
+int operator~(const std::deque<T>& v)
+{
+    return (int)v.size();
+}
 
 }  // namespace ul

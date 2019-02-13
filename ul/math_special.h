@@ -296,4 +296,14 @@ auto polycompose(const P& p, const Q& q)
     }
 }
 
+inline double hz2midi(double x)
+{
+    return 12 * log2(x / 440) + 69;
+}
+
+inline double midi2hz(double x)
+{
+    return 440 * pow(2, (x - 69) / 12);
+}
+
 }  // namespace ul

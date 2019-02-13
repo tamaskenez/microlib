@@ -5,6 +5,8 @@ if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 17)
 endif()
 
+set(CMAKE_DEBUG_POSTFIX d)
+
 set(common_gcc_clang -Wno-shorten-64-to-32 -Wno-sign-compare
     -Wno-sign-conversion -Werror=return-type -Wformat=2 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

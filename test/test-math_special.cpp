@@ -16,7 +16,9 @@ using ul::as_span;
 using ul::diffcos;
 using ul::diffsin;
 using ul::difftan;
+using ul::hz2midi;
 using ul::make_span;
+using ul::midi2hz;
 using ul::polycompose;
 using ul::polyval;
 using ul::sign;
@@ -312,6 +314,13 @@ int main()
             assert_approx_eq(wrap_angle_between_pi(x - 2 * TPI), x, p);
             assert_approx_eq(wrap_angle_between_pi(x - 20 * TPI), x, p);
         }
+    }
+
+    {
+        assert_approx_eq(hz2midi(440), 69, 1e-12);
+        assert_approx_eq(hz2midi(440 * pow(2, 1.0 / 12)), 70, 1e-12);
+        assert_approx_eq(midi2hz(69), 440, 1e-12);
+        assert_approx_eq(midi2hz(70), 440 * pow(2, 1.0 / 12), 1e-12);
     }
     printf("Done.\n");
     return 0;

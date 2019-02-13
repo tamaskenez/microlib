@@ -192,4 +192,24 @@ auto deg2rad(T x)
     return x / 180.0 * M_PI;
 }
 
+inline double pow2db(double p)
+{
+    return 10 * log10(p);
+}
+
+inline double db2pow(double db)
+{
+    return pow(10, db / 10);
+}
+
+inline double mag2db(double p)
+{
+    return 20 * log10(p);
+}
+
+inline double db2mag(double db)
+{
+    return pow(10, db / 20);
+}
+
 }  // namespace ul

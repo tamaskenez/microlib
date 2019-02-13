@@ -14,10 +14,14 @@ using std::vector;
 
 using ul::conv;
 using ul::conv_into;
+using ul::db2mag;
+using ul::db2pow;
+using ul::mag2db;
 using ul::make_span;
 using ul::polyder;
 using ul::polyint;
 using ul::polyval;
+using ul::pow2db;
 
 template <int N>
 using IV = ul::InlineVector<int, N>;
@@ -128,6 +132,17 @@ int main()
         test_conv<V, IV<9>, V>();
         test_conv<V, A3, V>();
         test_conv<V, V, V>();
+    }
+
+    {
+        assert(fabs(pow2db(1) - 0) < 1e-12);
+        assert(fabs(pow2db(100) - 20) < 1e-12);
+        assert(fabs(db2pow(0) - 1) < 1e-12);
+        assert(fabs(db2pow(20) - 100) < 1e-12);
+        assert(fabs(mag2db(1) - 0) < 1e-12);
+        assert(fabs(mag2db(10) - 20) < 1e-12);
+        assert(fabs(db2mag(0) - 1) < 1e-12);
+        assert(fabs(db2mag(20) - 10) < 1e-12);
     }
 
     printf("Done.\n");
