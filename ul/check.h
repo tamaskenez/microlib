@@ -50,6 +50,11 @@ UL_NORETURN void check_failed_core(const char* condition,
                                    const char* function,
                                    const char* format_string,
                                    ...) UL_PRINTFLIKE(5, 6);
+
+UL_NORETURN void unreachable_reached(const char* file,
+                                     int line,
+                                     const char* function);
+
 }  // namespace detail
 }  // namespace ul
 
@@ -68,6 +73,9 @@ UL_NORETURN void check_failed_core(const char* condition,
 #ifdef __clang__
 #pragma GCC diagnostic pop
 #endif
+
+#define UL_UNREACHABLE \
+    ((::ul::detail::unreachable_reached(__FILE__, __LINE__, UL_FUNCTION)))
 
 #ifndef UL_DONT_DEFINE_PLAIN_CHECK
 #define CHECK UL_CHECK

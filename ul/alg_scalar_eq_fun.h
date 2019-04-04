@@ -44,4 +44,4 @@ auto norm(const T& x) -> UL_DECAYDECL(x[0])
         s += it * it;
     return sqrt(s);
 }
-}
+}  // namespace ul

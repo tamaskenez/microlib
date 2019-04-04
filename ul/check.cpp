@@ -17,6 +17,13 @@ void check_failed_core(const char* condition,
     std::terminate();
 }
 
+void unreachable_reached(const char* file, int line, const char* function)
+{
+    fprintf(stderr, "Unreachable statement reached in `%s` @ %s:%d.\n",
+            function, file, line);
+    std::terminate();
+}
+
 void check_failed_core(const char* condition,
                        const char* file,
                        int line,

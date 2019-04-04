@@ -8,7 +8,7 @@ namespace ul {
 using std::array;
 using ul::span;
 
-int main(int, const char* [])
+int main(int, const char*[])
 {
     span<int> a;
     CHECK(a.empty() == true);
