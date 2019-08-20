@@ -38,7 +38,7 @@ public:
     size_t size() const
     {
         if (size_ == string::npos) {
-            auto mutable_this = (string_par*)this;
+            auto mutable_this = const_cast<string_par*>(this);
             mutable_this->size_ = strlen(s);
         }
         return size_;

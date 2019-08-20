@@ -35,7 +35,8 @@ public:
     template <std::size_t N>
     constexpr span(const std::array<std::remove_const_t<T>, N>& arr)
         : d(arr.data()), s(N)
-    {}
+    {
+    }
 
     // assignent from span
     template <typename U,
@@ -167,6 +168,7 @@ std::string to_string(span<T> x)
 
 template <class T>
 struct is_resizable<span<T>> : std::false_type
-{};
+{
+};
 
 }  // namespace ul

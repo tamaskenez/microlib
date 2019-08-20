@@ -38,7 +38,7 @@ void f2(string_par sp, const char* cc, bool b = true)
         f2(sp, cc, false);
 }
 
-int main(int, const char*[])
+int main(int, const char* [])
 {
     string_par s1(nullptr);
     CHECK(s1.empty());

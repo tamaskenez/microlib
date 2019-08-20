@@ -24,28 +24,33 @@ constexpr const uninitialized_t uninitialized;
 
 template <class T>
 struct range_code : std::integral_constant<ptrdiff_t, c_range_code_unknown>
-{};
+{
+};
 
 template <class T>
 struct range_code<std::vector<T>>
     : std::integral_constant<ptrdiff_t, c_range_code_indexable>
-{};
+{
+};
 
 template <class T, size_t N>
 struct range_code<std::array<T, N>>
     : std::integral_constant<ptrdiff_t, (ptrdiff_t)N>
-{};
+{
+};
 
 template <class T>
 struct is_resizable;
 
 template <class T, size_t N>
 struct is_resizable<std::array<T, N>> : std::false_type
-{};
+{
+};
 
 template <class T>
 struct is_resizable<std::vector<T>> : std::true_type
-{};
+{
+};
 
 template <class T>
 struct value_type
@@ -58,10 +63,12 @@ struct value_type
 
 template <class X>
 struct is_std_array : std::false_type
-{};
+{
+};
 
 template <class T, size_t N>
 struct is_std_array<std::array<T, N>> : std::true_type
-{};
+{
+};
 
 }  // namespace ul

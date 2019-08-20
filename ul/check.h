@@ -51,6 +51,16 @@ UL_NORETURN void check_failed_core(const char* condition,
                                    const char* format_string,
                                    ...) UL_PRINTFLIKE(5, 6);
 
+UL_NORETURN void unconditionally_failed_core(const char* file,
+                                             int line,
+                                             const char* function);
+
+UL_NORETURN void unconditionally_failed_core(const char* file,
+                                             int line,
+                                             const char* function,
+                                             const char* format_string,
+                                             ...) UL_PRINTFLIKE(4, 5);
+
 UL_NORETURN void unreachable_reached(const char* file,
                                      int line,
                                      const char* function);
@@ -70,9 +80,16 @@ UL_NORETURN void unreachable_reached(const char* file,
          : (::ul::detail::check_failed_core(#condition, __FILE__, __LINE__, \
                                             UL_FUNCTION, ##__VA_ARGS__)))
 
+#define UL_FAIL(...)                                               \
+    (::ul::detail::unconditionally_failed_core(__FILE__, __LINE__, \
+                                               UL_FUNCTION, ##__VA_ARGS__))
+
 #ifdef __clang__
 #pragma GCC diagnostic pop
 #endif
+
+#define UL_UNREACHABLE \
+    ((::ul::detail::unreachable_reached(__FILE__, __LINE__, UL_FUNCTION)))
 
 #define UL_UNREACHABLE \
     ((::ul::detail::unreachable_reached(__FILE__, __LINE__, UL_FUNCTION)))
