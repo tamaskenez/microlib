@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ul/span.h"
 #include "ul/string_par.h"
 
 namespace ul {

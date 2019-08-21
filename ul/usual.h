@@ -50,34 +50,4 @@ using VI = vector<int>;
 using VF = vector<float>;
 using VD = vector<double>;
 
-template <class T>
-int operator~(const std::vector<T>& v)
-{
-    return (int)v.size();
-}
-
-template <class T>
-int operator~(const std::deque<T>& v)
-{
-    return (int)v.size();
-}
-
-template <class T, std::size_t N>
-int operator~(const std::array<T, N>& v)
-{
-    return (int)v.size();
-}
-
-template <class T>
-int operator~(const std::basic_string<T>& v)
-{
-    return (int)v.size();
-}
-
-template <class K, class V>
-int operator~(const std::unordered_map<K, V>& v)
-{
-    return (int)v.size();
-}
-
 }  // namespace ul
