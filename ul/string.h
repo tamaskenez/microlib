@@ -5,6 +5,7 @@
 
 namespace ul {
 bool startswith(string_par s, string_par prefix);
+bool endswith(string_par s, string_par prefix);
 span<const char> trim(span<const char> s);
 void split(span<const char> s,
            const char* separators,

@@ -67,6 +67,28 @@ auto times(const std::array<X, N>& x, const std::array<Y, N>& y)
     return r;
 }
 
+template <size_t N>
+bool all_true(std::array<bool, N>& bs)
+{
+    for (auto b : bs) {
+        if (!b) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <size_t N>
+bool any_true(std::array<bool, N>& bs)
+{
+    for (auto b : bs) {
+        if (b) {
+            return true;
+        }
+    }
+    return false;
+}
+
 }  // namespace array_math
 
 namespace vector_math {
