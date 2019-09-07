@@ -3,6 +3,7 @@ add_library(microlib
     ${headers}
     ul.cpp
     string.cpp
+    stringf.cpp
     check.cpp)
 
 target_include_directories(microlib
@@ -28,4 +29,3 @@ install(DIRECTORY .
     DESTINATION include/ul
     FILES_MATCHING PATTERN *.h
     )
-

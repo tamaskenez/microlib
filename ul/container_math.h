@@ -68,7 +68,7 @@ auto times(const std::array<X, N>& x, const std::array<Y, N>& y)
 }
 
 template <size_t N>
-bool all_true(std::array<bool, N>& bs)
+bool all_true(const std::array<bool, N>& bs)
 {
     for (auto b : bs) {
         if (!b) {
@@ -79,7 +79,7 @@ bool all_true(std::array<bool, N>& bs)
 }
 
 template <size_t N>
-bool any_true(std::array<bool, N>& bs)
+bool any_true(const std::array<bool, N>& bs)
 {
     for (auto b : bs) {
         if (b) {
@@ -87,6 +87,24 @@ bool any_true(std::array<bool, N>& bs)
         }
     }
     return false;
+}
+
+template <class X, class Y, size_t N>
+auto min_elementwise(const std::array<X, N>& x, const std::array<Y, N>& y)
+{
+    using Z = decltype(x[0] + y[0]);
+    std::array<Z, N> z;
+    FOR(i, 0, < N) { z[i] = std::min<Z>(x[i], y[i]); }
+    return z;
+}
+
+template <class X, class Y, size_t N>
+auto max_elementwise(const std::array<X, N>& x, const std::array<Y, N>& y)
+{
+    using Z = decltype(x[0] + y[0]);
+    std::array<Z, N> z;
+    FOR(i, 0, < N) { z[i] = std::max<Z>(x[i], y[i]); }
+    return z;
 }
 
 }  // namespace array_math
