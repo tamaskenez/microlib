@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <numeric>
 #include <vector>
 
 #include "ul/check.h"
@@ -9,6 +10,16 @@
 
 namespace ul {
 namespace array_math {
+
+template <class X, class Y, size_t N>
+auto operator+(const std::array<X, N>& x, Y y)
+{
+    std::array<decltype(x[0] + y), N> r;
+    for (int i = 0; i < N; ++i) {
+        r[i] = x[i] + y;
+    }
+    return r;
+}
 
 template <class X, class Y, size_t N>
 auto operator-(const std::array<X, N>& x, const std::array<Y, N>& y)
@@ -156,6 +167,41 @@ std::vector<X>& operator/=(std::vector<X>& x, const Y& y)
 {
     FOR(i, 0, < x.size()) { x[i] /= y; }
     return x;
+}
+
+template <class X>
+auto sum(const std::vector<X>& x)
+{
+    X s(0);
+    for (auto i : x) {
+        s += i;
+    }
+    return s;
+}
+
+template <class T>
+auto iota_v(T start_value, int size)
+{
+    std::vector<T> v(size);
+    std::iota(BE(v), start_value);
+    return v;
+}
+
+template <class T = int>
+auto iota_v(int size)
+{
+    return iota_v((T)0, size);
+}
+
+template <class X, class Y>
+auto times(const std::vector<X>& x, const std::vector<Y>& y)
+{
+    const auto N = x.size();
+    CHECK(y.size() == N);
+    std::vector<decltype(x[0] * y[0])> r;
+    r.reserve(N);
+    FOR(i, 0, < N) { r.push_back(x[i] * y[i]); }
+    return r;
 }
 
 }  // namespace vector_math
