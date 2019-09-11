@@ -4,7 +4,9 @@ add_library(microlib
     ul.cpp
     string.cpp
     stringf.cpp
-    check.cpp)
+    check.cpp
+    math.cpp
+  )
 
 target_include_directories(microlib
     PUBLIC
