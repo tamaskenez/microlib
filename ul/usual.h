@@ -8,6 +8,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
 #include "ul/check.h"
@@ -25,6 +26,8 @@ using UQP = std::unique_ptr<T>;
 using std::array;
 using std::deque;
 using std::get;
+using std::get_if;
+using std::holds_alternative;
 using std::make_pair;
 using std::make_tuple;
 using std::make_unique;

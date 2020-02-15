@@ -22,6 +22,11 @@ bool startswith(string_par s, string_par prefix)
     return true;
 }
 
+bool startswith(string_par s, char prefix)
+{
+    return !s.empty() && s[0] == prefix;
+}
+
 bool endswith(string_par s, string_par prefix)
 {
     if (s.size() < prefix.size()) {
