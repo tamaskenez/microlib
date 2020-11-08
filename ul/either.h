@@ -66,4 +66,4 @@ auto get_if_right(const either<L, R>* v)
 {
     return std::get_if<1>(v);
 }
-}  // namespace libcalc
+}  // namespace ul
