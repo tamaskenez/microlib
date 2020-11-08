@@ -150,12 +150,10 @@ private:
 
 template <class T, int N>
 struct range_code<InlineVector<T, N>> : std::integral_constant<ptrdiff_t, N>
-{
-};
+{};
 
 template <class T, int N>
 struct is_resizable<InlineVector<T, N>> : std::true_type
-{
-};
+{};
 
 }  // namespace ul

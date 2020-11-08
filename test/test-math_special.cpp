@@ -157,43 +157,52 @@ int main()
     {
         for (double x = -1; x < 1; x += 0.1) {
             assert_approx_eq(difftan<0>(x), tan(x), 1e-10);
-            assert_approx_eq(
-                difftan<1>(x),
-                approx_deriv(1, [](double x) { return tan(x); }, x), 1e-8);
-            assert_approx_eq(
-                difftan<2>(x),
-                approx_deriv(2, [](double x) { return tan(x); }, x), 1e-5);
-            assert_approx_eq(
-                difftan<3>(x),
-                approx_deriv(3, [](double x) { return tan(x); }, x), 1e-3);
+            assert_approx_eq(difftan<1>(x),
+                             approx_deriv(
+                                 1, [](double x) { return tan(x); }, x),
+                             1e-8);
+            assert_approx_eq(difftan<2>(x),
+                             approx_deriv(
+                                 2, [](double x) { return tan(x); }, x),
+                             1e-5);
+            assert_approx_eq(difftan<3>(x),
+                             approx_deriv(
+                                 3, [](double x) { return tan(x); }, x),
+                             1e-3);
         }
     }
     {
         for (double x = -1; x < 1; x += 0.1) {
             assert_approx_eq(diffcos<0>(x), cos(x), 1e-10);
-            assert_approx_eq(
-                diffcos<1>(x),
-                approx_deriv(1, [](double x) { return cos(x); }, x), 1e-8);
-            assert_approx_eq(
-                diffcos<2>(x),
-                approx_deriv(2, [](double x) { return cos(x); }, x), 1e-5);
-            assert_approx_eq(
-                diffcos<3>(x),
-                approx_deriv(3, [](double x) { return cos(x); }, x), 1e-3);
+            assert_approx_eq(diffcos<1>(x),
+                             approx_deriv(
+                                 1, [](double x) { return cos(x); }, x),
+                             1e-8);
+            assert_approx_eq(diffcos<2>(x),
+                             approx_deriv(
+                                 2, [](double x) { return cos(x); }, x),
+                             1e-5);
+            assert_approx_eq(diffcos<3>(x),
+                             approx_deriv(
+                                 3, [](double x) { return cos(x); }, x),
+                             1e-3);
         }
     }
     {
         for (double x = -1; x < 1; x += 0.1) {
             assert_approx_eq(diffsin<0>(x), sin(x), 1e-10);
-            assert_approx_eq(
-                diffsin<1>(x),
-                approx_deriv(1, [](double x) { return sin(x); }, x), 1e-8);
-            assert_approx_eq(
-                diffsin<2>(x),
-                approx_deriv(2, [](double x) { return sin(x); }, x), 1e-5);
-            assert_approx_eq(
-                diffsin<3>(x),
-                approx_deriv(3, [](double x) { return sin(x); }, x), 1e-3);
+            assert_approx_eq(diffsin<1>(x),
+                             approx_deriv(
+                                 1, [](double x) { return sin(x); }, x),
+                             1e-8);
+            assert_approx_eq(diffsin<2>(x),
+                             approx_deriv(
+                                 2, [](double x) { return sin(x); }, x),
+                             1e-5);
+            assert_approx_eq(diffsin<3>(x),
+                             approx_deriv(
+                                 3, [](double x) { return sin(x); }, x),
+                             1e-3);
         }
     }
     {
