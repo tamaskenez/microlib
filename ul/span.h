@@ -125,6 +125,13 @@ span<std::add_const_t<T>> as_const_span(const std::vector<T>& x)
 }
 
 template <class T>
+span<std::add_const_t<T>> as_const_span(span<T> x)
+{
+    using const_T = std::add_const_t<T>;
+    return span<const_T>(x.data(), x.size());
+}
+
+template <class T>
 span<T> as_span(std::vector<T>& x)
 {
     return make_span(x.data(), x.size());

@@ -89,7 +89,7 @@ int main()
         assert(norm(array<double, 2>{{4, 3}}) == 5);
         assert(norm(vector<double>{{4, 3}}) == 5);
         assert(norm(array<double, 1>{{3}}) == 3);
-        assert(norm(vector<double>{{3}}) == 3);
+        assert(norm(vector<double>{3}) == 3);
         assert(norm(array<double, 0>{{}}) == 0);
         assert(norm(vector<double>()) == 0);
         assert(fabs(norm(array<double, 5>{{1.0, 2.0, 3.0, 4.0, 5.0}}) -

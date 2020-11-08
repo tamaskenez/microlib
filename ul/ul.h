@@ -14,6 +14,20 @@
 #define FOR(VAR, FROM, OP_TO) for (auto VAR = (FROM); VAR OP_TO; ++(VAR))
 #define FORBACK(VAR, FROM, OP_TO) for (auto VAR = (FROM); VAR OP_TO; --(VAR))
 #define FORBE(VAR, X) for (auto VAR = begin(X); (VAR) != end(X); ++(VAR))
+#define FST first
+#define SND second
+
+// Usage:
+// string s;
+// const char* cstring = CSTR s;
+
+#define CSTR TO_CSTR_CONVERTER{} %
+struct TO_CSTR_CONVERTER
+{};
+inline const char* operator%(const TO_CSTR_CONVERTER& x, const std::string& y)
+{
+    return y.c_str();
+}
 
 // Creates zero-overhead scope exit object
 // Usage example: ON_SCOPE_EXIT { fclose(); };

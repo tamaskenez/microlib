@@ -7,6 +7,8 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
+#include <variant>
 #include <vector>
 
 #include "ul/check.h"
@@ -18,10 +20,14 @@
 
 namespace ul {
 template <class T>
-using up = std::unique_ptr<T>;
+
+using UQP = std::unique_ptr<T>;
 
 using std::array;
 using std::deque;
+using std::get;
+using std::get_if;
+using std::holds_alternative;
 using std::make_pair;
 using std::make_tuple;
 using std::make_unique;
@@ -30,6 +36,8 @@ using std::pair;
 using std::string;
 using std::tie;
 using std::tuple;
+using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
 template <typename T>
@@ -50,5 +58,11 @@ using AI4 = A4<int>;
 using VI = vector<int>;
 using VF = vector<float>;
 using VD = vector<double>;
+using VS = vector<string>;
+
+template <size_t N>
+using AD = array<double, N>;
+
+using namespace size_op;
 
 }  // namespace ul

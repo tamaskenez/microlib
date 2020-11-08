@@ -5,6 +5,8 @@
 #include <cmath>
 #include <vector>
 
+#include "ul/check.h"
+#include "ul/config.h"
 #include "ul/span.h"
 
 #ifndef M_PI
@@ -50,5 +52,82 @@ T sec(T x)  // secant
 {
     return 1 / cos(x);
 }
+
+class Statistics
+{
+public:
+    void reset();
+
+    void add(double d)
+    {
+        if (UL_UNLIKELY(std::isnan(d))) {
+            return;
+        }
+        ++count_;
+        sum_ += d;
+        sum2_ += square(d);
+        if (UL_UNLIKELY(std::isnan(lower_)))
+            lower_ = upper_ = d;
+        else if (d < lower_)
+            lower_ = d;
+        else if (d > upper_)
+            upper_ = d;
+        bDirty = true;
+    }
+
+    double mean() const
+    {
+        update_if_needed();
+        return mean_;
+    }
+
+    double std() const  // normalized with N
+    {
+        update_if_needed();
+        return std_;
+    }
+    double std_sample() const  // normalized with N-1
+    {
+        update_if_needed();
+        return std_sample_;
+    }
+
+    double var() const  // normalized with N
+    {
+        update_if_needed();
+        return var_;
+    }
+    double var_sample() const  // normalized with N-1
+    {
+        update_if_needed();
+        return var_sample_;
+    }
+
+    int count() const
+    {
+        CHECK(count_ <= INT_MAX);
+        return static_cast<int>(count_);
+    }
+    int64_t count64() const { return count_; }
+    double sum() const { return sum_; }
+    double sum2() const { return sum2_; }
+    double upper() const { return upper_; }
+    double lower() const { return lower_; }
+    void update() const;
+
+private:
+    void update_if_needed() const
+    {
+        if (bDirty)
+            update();
+    }
+    double sum_ = 0.0, sum2_ = 0.0;
+    int64_t count_ = 0;
+
+    mutable bool bDirty = false;
+    mutable double mean_ = NAN;
+    mutable double lower_ = NAN, upper_ = NAN;
+    mutable double std_, std_sample_, var_, var_sample_;
+};
 
 }  // namespace ul

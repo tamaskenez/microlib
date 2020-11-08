@@ -7,11 +7,41 @@ using std::vector;
 
 bool startswith(string_par s, string_par prefix)
 {
-    if (s.size() < prefix.size())
+    if (s.size() < prefix.size()) {
         return false;
-    if (prefix.size() == 0)
+    }
+    if (prefix.size() == 0) {
         return true;
-    FOR(i, 0, < prefix.size()) if (s[i] != prefix[i]) return false;
+    }
+    FOR(i, 0, < prefix.size())
+    {
+        if (s[i] != prefix[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool startswith(string_par s, char prefix)
+{
+    return !s.empty() && s[0] == prefix;
+}
+
+bool endswith(string_par s, string_par prefix)
+{
+    if (s.size() < prefix.size()) {
+        return false;
+    }
+    if (prefix.empty()) {
+        return true;
+    }
+    auto k = s.size() - prefix.size();
+    FOR(i, 0, < prefix.size())
+    {
+        if (s[k + i] != prefix[i]) {
+            return false;
+        }
+    }
     return true;
 }
 
