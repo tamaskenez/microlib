@@ -11,6 +11,7 @@
 
 #include "ul/check.h"
 #include "ul/inlinevector.h"
+#include "ul/maybe.h"
 #include "ul/preproc.h"
 #include "ul/string_par.h"
 #include "ul/ul.h"
